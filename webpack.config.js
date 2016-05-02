@@ -23,15 +23,16 @@ module.exports = {
   },
   module: {
     loaders: [
-    {
-      test: /\.(js|jsx)?$/,
-      exclude: /(node_modules)/,
-      loader: 'babel', // 'babel-loader' is also a legal name to reference
-      query: {
-        presets: ['react', 'es2015']
-      }
-    },
-      { test: /\.html$/, loader: 'raw-loader' }
+      {
+        test: /\.(js|jsx)?$/,
+        exclude: /(node_modules)/,
+        loader: 'babel', // 'babel-loader' is also a legal name to reference
+        query: {
+          presets: ['react', 'es2015']
+        }
+      },
+      { test: /\.html$/, loader: 'raw-loader' },
+      { test: /\.json$/, loader: 'json-loader' }
     ]
   },
   devServer:{

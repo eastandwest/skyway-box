@@ -1,0 +1,75 @@
+<!doctype html>
+<html>
+  <head>
+    <script src="https://skyway.io/dist/0.3/peer.min.js"></script>
+    <script src="../dist/skyway-janus.build.js"></script>
+    <script src="https://code.jquery.com/jquery-2.2.3.min.js"></script>
+  </head>
+  <body>
+    <div id="status"></div>
+    <video autoplay></video>
+    <script>
+      var peer = new Peer({key: "db07bbb6-4ee8-4eb7-b0c2-b8b2e5c69ef9", debug: 0})
+        , peers = []
+        , streaming = null;
+
+      peer.on("open", (id) => {
+        streaming = new SkywayJanus.Streaming(peer);
+
+        streaming.on("starting",  (ev) => { $("#status").text("starting"); });
+        streaming.on("started",   (ev) => { $("#status").text("started");  });
+        streaming.on("webrtcup",  (ev) => { $("#status").text("webrtcup"); });
+        streaming.on("stopping",  (ev) => { $("#status").text("stopping"); });
+        streaming.on("hangup",    (ev) => { $("#status").text("hangup");   });
+        streaming.on("keepalive", (ev) => { console.log("keepalive"); });
+
+        peer.listAllPeers((list) => {
+          list.forEach((peerid) => {
+            if(peerid.indexOf("SSG_") === 0) peers.push(peerid);
+          });
+          attach();
+        });
+      });
+
+      var attach = () => {
+        streaming.attach(peers[0]).then((data) => {
+          console.log("attach", JSON.stringify(data, null, "  "));
+          list();
+        });
+      }
+
+      var list = () => {
+        streaming.list(peers[0]).then((data) => {
+          console.log("list", JSON.stringify(data, null, "  "));
+          watch(1);
+        });
+      }
+
+      var watch = (id) => {
+        streaming.watch(peers[0], 1).then((data) => {
+          console.log("watch", id, JSON.stringify(data, null, "  "));
+        });
+      }
+
+      var stop = () => {
+        streaming.stop(peers[0]).then((data) => {
+          console.log("stop", JSON.stringify(data, null, "  "));
+        });
+      }
+
+      peer.on("call", (call) => {
+        call.answer();
+
+        call.on("stream", (stream) => {
+          var url = window.URL.createObjectURL(stream);
+
+          $("video").attr("src", url);
+
+          setTimeout(stop, 30000);
+        });
+      });
+
+
+    </script>
+  </body>
+</html>

@@ -6,14 +6,9 @@ const PORT = 8080
 
 switch(process.env.NODE_ENV) {
   case "test":
-    _entry = {
-      "skyway-janus": "./libs/index.js",
-      "test" : "mocha!./test/skyway-janus.test.js"
-    };
-    break;
   default:
     _entry = {
-      "skyway-janus": "./libs/index.js",
+      "skyway-box": "./sample/skyway-box-entry.js"
     };
     break;
 }
@@ -22,8 +17,8 @@ module.exports = {
   entry: _entry,
   devtool: "source-map",
   output: {
-    path: path.join(__dirname, "dist"),
-    publicPath: "dist",
+    path: path.join(__dirname, "sample"),
+    publicPath: "sample",
     filename: process.env.NODE_ENV === "production" ? "[name].build.min.js" : "[name].build.js"
   },
   module: {

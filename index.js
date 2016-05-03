@@ -16,8 +16,6 @@ app.use(express.static('sample'));
 app.get("/token", (req, res) => {
   var code = req.query.code;
 
-  console.log(code);
-
   var options = {
     "method": "POST",
     "url": conf.api_endpoint + "token",
@@ -30,7 +28,6 @@ app.get("/token", (req, res) => {
   };
 
   curl.request(options, (e, body, r) => {
-    console.log(body);
     res.send(body);
   });
 });
@@ -39,11 +36,9 @@ app.get("/folders/:id", (req, res) => {
   var folder_id = req.params.id
     , access_token = req.query.access_token;
 
-  console.log(folder_id, access_token);
-
   // fixme: fix hardcode of url
   var options = {
-    "method": "POST",
+    "method": "GET",
     "url": "https://api.box.com/2.0/folders/" + folder_id,
     "headers": {
       "Authorization": "Bearer " + access_token
@@ -51,7 +46,6 @@ app.get("/folders/:id", (req, res) => {
   };
 
   curl.request(options, (e, body, r) => {
-    console.log(r);
     res.send(body);
   });
 });

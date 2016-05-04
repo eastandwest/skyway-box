@@ -10,6 +10,7 @@ var express = require('express')
 var privateKey = fs.readFileSync('cert/server.key', 'utf8')
   , certificate = fs.readFileSync('cert/server.crt', 'utf8')
   , credentials = {key: privateKey, cert: certificate}
+  , api = "https://api.box.com/2.0/"
 
 app.use(express.static('sample'));
 
@@ -32,6 +33,33 @@ app.get("/token", (req, res) => {
   });
 });
 
+///////////////////////////////////////////////
+// GET /me?acccess_token=ACCESS_TOKEN
+//
+app.get("/me", (req, res) => {
+  var access_token = req.query.access_token;
+
+  // fixme: fix hardcode of url
+  var options = {
+    "method": "GET",
+    "url": api + "/users/me",
+    "headers": {
+      "Authorization": "Bearer " + access_token
+    }
+  };
+
+  // todo: error handling
+  curl.request(options, (e, body, r) => {
+    res.send(body);
+    res.end();
+  });
+});
+
+
+
+///////////////////////////////////////////////
+// GET /folders/FILE_ID?access_token=ACCESS_TOKEN
+//
 app.get("/folders/:id", (req, res) => {
   var folder_id = req.params.id
     , access_token = req.query.access_token;
@@ -39,16 +67,42 @@ app.get("/folders/:id", (req, res) => {
   // fixme: fix hardcode of url
   var options = {
     "method": "GET",
-    "url": "https://api.box.com/2.0/folders/" + folder_id,
+    "url": api + "folders/" + folder_id,
     "headers": {
       "Authorization": "Bearer " + access_token
     }
   };
 
+  // todo: error handling
   curl.request(options, (e, body, r) => {
     res.send(body);
+    res.end();
   });
 });
+
+///////////////////////////////////////////////
+// GET /embedlink/FILE_ID?access_token=ACCESS_TOKEN
+//
+app.get("/embedlink/:id", (req, res) => {
+  var file_id = req.params.id
+    , access_token = req.query.access_token;
+
+  // fixme: fix hardcode of url
+  var options = {
+    "method": "GET",
+    "url": api + "files/" + file_id + "?fields=expiring_embed_link",
+    "headers": {
+      "Authorization": "Bearer " + access_token
+    }
+  };
+
+  // todo: error handling
+  curl.request(options, (e, body, r) => {
+    res.send(body);
+    res.end();
+  });
+});
+
 
 
 

@@ -3,9 +3,13 @@ if(process.env.NODE_ENV==="test") {
 }
 
 var $ = require("jquery")
-  , State = require("../libs/base/state");
+  , State = require("../libs/base/state")
+  , Folder = require("../libs/components/folder")
+  , File   = require("../libs/components/file")
+  , Me     = require("../libs/components/Me")
+  , Chat   = require("../libs/components/Chat")
 
-var token = null;
+var token = null
 
 
 if(State.is_redirect()) {
@@ -13,11 +17,16 @@ if(State.is_redirect()) {
   console.log(location.search);
   $.get("/token", {"code": State.code}, (data) => {
     token = JSON.parse(data);
-    console.log(token);
 
-    $.get("/folders/0", {"access_token": token.access_token}, (data) => {
-      console.log(JSON.parse(data));
-    });
+    var me = new Me("#me-view", token.access_token);
+
+    var folder = new Folder(0, "#folder-view", token.access_token)
+      .on("fileSelected", (file_id) => {
+        console.log("fileSelected", file_id);
+        var file = new File(file_id, "#file-view", token.access_token)
+      });
+
+    var chat = new Chat("#chat-view")
   });
 } else {
   var auth_url = State.get_authorizeurl();

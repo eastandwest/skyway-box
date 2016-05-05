@@ -44,147 +44,46 @@
 /* 0 */
 /***/ function(module, exports, __webpack_require__) {
 
-	/* WEBPACK VAR INJECTION */(function(process) {"use strict";
+	"use strict";
 	
-	if (process.env.NODE_ENV === "test") {
-	  __webpack_require__(2); // this includes html file in watcher list
-	}
+	var $ = __webpack_require__(1),
+	    State = __webpack_require__(2),
+	    Box = __webpack_require__(8),
+	    Skyway = __webpack_require__(17),
+	    conf = __webpack_require__(7);
 	
-	var $ = __webpack_require__(3),
-	    State = __webpack_require__(4),
-	    Folder = __webpack_require__(10),
-	    File = __webpack_require__(16),
-	    Me = __webpack_require__(19),
-	    Chat = __webpack_require__(22);
-	
-	var token = null;
+	var token = null,
+	    box = null,
+	    skyway = null;
 	
 	if (State.is_redirect()) {
-	  console.log("logined!");
-	  console.log(location.search);
+	  $(".mastcontainer").show();
+	
+	  // for debug
+	  skyway = new Skyway(conf.skyway_api_key);
 	  $.get("/token", { "code": State.code }, function (data) {
 	    token = JSON.parse(data);
+	    console.log(token);
 	
-	    var me = new Me("#me-view", token.access_token);
+	    box = new Box(token.access_token);
 	
-	    var folder = new Folder(0, "#folder-view", token.access_token).on("fileSelected", function (file_id) {
-	      console.log("fileSelected", file_id);
-	      var file = new File(file_id, "#file-view", token.access_token);
-	    });
-	
-	    var chat = new Chat("#chat-view");
+	    setHandler();
 	  });
 	} else {
+	  $(".login").show();
+	
 	  var auth_url = State.get_authorizeurl();
 	  $("#box-login").attr("href", auth_url).text("login with box account");
 	}
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
+	
+	var setHandler = function setHandler() {
+	  box.on("profile", function (profile_data) {
+	    skyway.setProfile(profile_data);
+	  });
+	};
 
 /***/ },
 /* 1 */
-/***/ function(module, exports) {
-
-	// shim for using process in browser
-	
-	var process = module.exports = {};
-	var queue = [];
-	var draining = false;
-	var currentQueue;
-	var queueIndex = -1;
-	
-	function cleanUpNextTick() {
-	    draining = false;
-	    if (currentQueue.length) {
-	        queue = currentQueue.concat(queue);
-	    } else {
-	        queueIndex = -1;
-	    }
-	    if (queue.length) {
-	        drainQueue();
-	    }
-	}
-	
-	function drainQueue() {
-	    if (draining) {
-	        return;
-	    }
-	    var timeout = setTimeout(cleanUpNextTick);
-	    draining = true;
-	
-	    var len = queue.length;
-	    while(len) {
-	        currentQueue = queue;
-	        queue = [];
-	        while (++queueIndex < len) {
-	            if (currentQueue) {
-	                currentQueue[queueIndex].run();
-	            }
-	        }
-	        queueIndex = -1;
-	        len = queue.length;
-	    }
-	    currentQueue = null;
-	    draining = false;
-	    clearTimeout(timeout);
-	}
-	
-	process.nextTick = function (fun) {
-	    var args = new Array(arguments.length - 1);
-	    if (arguments.length > 1) {
-	        for (var i = 1; i < arguments.length; i++) {
-	            args[i - 1] = arguments[i];
-	        }
-	    }
-	    queue.push(new Item(fun, args));
-	    if (queue.length === 1 && !draining) {
-	        setTimeout(drainQueue, 0);
-	    }
-	};
-	
-	// v8 likes predictible objects
-	function Item(fun, array) {
-	    this.fun = fun;
-	    this.array = array;
-	}
-	Item.prototype.run = function () {
-	    this.fun.apply(null, this.array);
-	};
-	process.title = 'browser';
-	process.browser = true;
-	process.env = {};
-	process.argv = [];
-	process.version = ''; // empty string to avoid regexp issues
-	process.versions = {};
-	
-	function noop() {}
-	
-	process.on = noop;
-	process.addListener = noop;
-	process.once = noop;
-	process.off = noop;
-	process.removeListener = noop;
-	process.removeAllListeners = noop;
-	process.emit = noop;
-	
-	process.binding = function (name) {
-	    throw new Error('process.binding is not supported');
-	};
-	
-	process.cwd = function () { return '/' };
-	process.chdir = function (dir) {
-	    throw new Error('process.chdir is not supported');
-	};
-	process.umask = function() { return 0; };
-
-
-/***/ },
-/* 2 */
-/***/ function(module, exports) {
-
-	module.exports = "<!doctype html>\n<html>\n  <head>\n    <meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">\n\n    <title></title>\n    <script src=\"https://code.jquery.com/jquery-2.2.3.min.js\" integrity=\"sha256-a23g1Nt4dtEYOj7bR+vTu7+T8VP13humZFBJNIYoEJo=\" crossorigin=\"anonymous\"></script>\n    <script src=\"https://skyway.io/dist/0.3/peer.js\"></script>\n    <script src=\"https://skyway.io/dist/multiparty.js\"></script>\n\n  </head>\n  <body>\n    hoge6\n    <a id=\"box-login\"></a>\n\n    <div id=\"box-view\">\n      <div id=\"me-view\"></div>\n      <div id=\"folder-view\"></div>\n      <div id=\"file-view\"></div>\n    </div>\n\n    <div id=\"skyway-view\">\n      <div id=\"chat-view\"></div>\n    </div>\n  </body>\n  <script src=\"./skyway-box.build.js\"></script>\n</html>\n"
-
-/***/ },
-/* 3 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
@@ -10032,14 +9931,14 @@
 
 
 /***/ },
-/* 4 */
+/* 2 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 	
-	var md5 = __webpack_require__(5),
-	    $ = __webpack_require__(3),
-	    conf = __webpack_require__(9);
+	var md5 = __webpack_require__(3),
+	    $ = __webpack_require__(1),
+	    conf = __webpack_require__(7);
 	
 	// fixme: client_id and client_secret should be loaded from config file
 	var State = {
@@ -10096,14 +9995,14 @@
 	module.exports = State;
 
 /***/ },
-/* 5 */
+/* 3 */
 /***/ function(module, exports, __webpack_require__) {
 
 	(function(){
-	  var crypt = __webpack_require__(6),
-	      utf8 = __webpack_require__(7).utf8,
-	      isBuffer = __webpack_require__(8),
-	      bin = __webpack_require__(7).bin,
+	  var crypt = __webpack_require__(4),
+	      utf8 = __webpack_require__(5).utf8,
+	      isBuffer = __webpack_require__(6),
+	      bin = __webpack_require__(5).bin,
 	
 	  // The core
 	  md5 = function (message, options) {
@@ -10262,7 +10161,7 @@
 
 
 /***/ },
-/* 6 */
+/* 4 */
 /***/ function(module, exports) {
 
 	(function() {
@@ -10364,7 +10263,7 @@
 
 
 /***/ },
-/* 7 */
+/* 5 */
 /***/ function(module, exports) {
 
 	var charenc = {
@@ -10403,7 +10302,7 @@
 
 
 /***/ },
-/* 8 */
+/* 6 */
 /***/ function(module, exports) {
 
 	/**
@@ -10426,7 +10325,7 @@
 
 
 /***/ },
-/* 9 */
+/* 7 */
 /***/ function(module, exports) {
 
 	module.exports = {
@@ -10437,10 +10336,12 @@
 	};
 
 /***/ },
-/* 10 */
+/* 8 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
+	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
@@ -10448,35 +10349,161 @@
 	
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 	
-	var FolderView = __webpack_require__(11),
-	    FolderModel = __webpack_require__(14),
-	    EventEmitter = __webpack_require__(15).EventEmitter;
+	var Folder = __webpack_require__(9),
+	    Profile = __webpack_require__(13),
+	    Preview = __webpack_require__(14),
+	    SlideShare = __webpack_require__(15),
+	    Upload = __webpack_require__(16),
+	    EventEmitter = __webpack_require__(12).EventEmitter;
+	
+	var Box = function (_EventEmitter) {
+	  _inherits(Box, _EventEmitter);
+	
+	  function Box(access_token) {
+	    _classCallCheck(this, Box);
+	
+	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Box).call(this));
+	
+	    if (!access_token) throw "access_token must be set";
+	    _this.access_token = access_token;
+	
+	    _this.folder = new Folder("#folder-view", access_token);
+	    _this.profile = new Profile("#profile-view", access_token);
+	    _this.preview = new Preview("#preview-view", access_token);
+	    _this.slideshare = new SlideShare("#slideshare-view", access_token);
+	    _this.upload = new Upload("#upload-view", access_token);
+	
+	    _this.setHandler();
+	    return _this;
+	  }
+	
+	  _createClass(Box, [{
+	    key: "setHandler",
+	    value: function setHandler() {
+	      var _this2 = this;
+	
+	      this.profile.on("profile", function (profile_data) {
+	        _this2.emit("profile", profile_data);
+	      });
+	      this.folder.on("share", function (file_id) {
+	        console.log("share - ", file_id);
+	        _this2.slideshare.fetch(file_id);
+	      });
+	      this.folder.on("preview", function (file_id) {
+	        _this2.preview.fetch(file_id);
+	      });
+	    }
+	  }]);
+	
+	  return Box;
+	}(EventEmitter);
+	
+	module.exports = Box;
+
+/***/ },
+/* 9 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	
+	var backbone = __webpack_require__(10),
+	    _ = __webpack_require__(11),
+	    EventEmitter = __webpack_require__(12).EventEmitter;
+	
+	////////////////////////////////////////////
+	// template html (underscore)
+	//
+	var template_ = ["<ul>", "<% attributes.item_collection.entries.forEach( (entry) => { %>", "<div class='well well-sm clearfix'>", "<div class='pull-left'>", "<span class='glyphicon <%= icons[entry.type] %> aria-hidden='true'></span>&nbsp;", "<span class='label label-primary'><%= entry.type %></span>&nbsp;", " : <%= entry.name %>", "</div>", "<% if(entry.type === 'file') { %>", "<div class='pull-right'>", "<button class='btn btn-xs btn-info' data-action='share' data-id='<%= entry.id %>'>share</button>&nbsp;", "<button class='btn btn-xs btn-warning' data-action='preview' data-id='<%= entry.id %>'>preview</button>&nbsp;", "</div>", "<% } %>", "</div>", "<% }); %>", "</ul>"].join("");
+	
+	////////////////////////////////////////////
+	// Backbone Model
+	//
+	var Model = Backbone.Model.extend({
+	  urlRoot: '/folders'
+	});
+	
+	////////////////////////////////////////////
+	// Backbone View
+	//
+	var View = Backbone.View.extend({
+	  template: _.template(template_),
+	  events: {
+	    "click button": "btnClicked"
+	  },
+	  btnClicked: function btnClicked(ev) {
+	    var action = ev.target.dataset.action,
+	        id = ev.target.dataset.id;
+	    console.log("btnClicked - ", id, action);
+	    this.trigger("btnClicked", { "file_id": id, "action": action });
+	  },
+	  render: function render() {
+	    this.$el.html(this.template({
+	      "attributes": this.model.attributes,
+	      "icons": {
+	        "folder": "glyphicon-folder-close",
+	        "file": "glyphicon-file",
+	        "web_link": "glyphicon-globe"
+	      }
+	    }));
+	  }
+	});
+	
+	////////////////////////////////////////////
+	// Component
+	//
 	
 	var Folder = function (_EventEmitter) {
 	  _inherits(Folder, _EventEmitter);
 	
-	  function Folder(folder_id, element, access_token) {
+	  function Folder(element, access_token) {
 	    _classCallCheck(this, Folder);
 	
 	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Folder).call(this));
 	
 	    _this.access_token = access_token;
-	    _this.element = element;
+	    _this.el = element;
 	
-	    _this.model = new FolderModel({ id: folder_id });
-	    var self = _this;
+	    _this.model = new Model();
+	    _this.view = new View({ el: _this.el, model: _this.model });
 	
-	    self.model.fetch({ data: { access_token: _this.access_token } }).success(function () {
-	      _this.view = new FolderView({ el: self.element, model: self.model }).render().on("contentClicked", function (params) {
-	        if (params.type === "file") {
-	          _this.emit("fileSelected", params.id);
-	        } else {
-	          _this.emit("folderSelected", params.id);
-	        }
-	      });
+	    _this.view.on("btnClicked", function (obj) {
+	      switch (obj.action) {
+	        case "share":
+	          _this.emit("share", obj.file_id);
+	          break;
+	        case "preview":
+	          _this.emit("preview", obj.file_id);
+	          break;
+	      }
 	    });
+	
+	    _this.fetch(0);
 	    return _this;
 	  }
+	
+	  _createClass(Folder, [{
+	    key: 'fetch',
+	    value: function fetch(id, callback) {
+	      var _this2 = this;
+	
+	      var folder_id = id || 0;
+	      this.model.set("id", folder_id).fetch({ "data": { "access_token": this.access_token } }).success(function () {
+	        if (typeof callback === "function") {
+	          callback(_this2.model.attributes);
+	        } else {
+	          _this2.view.render();
+	        };
+	      });
+	    }
+	  }]);
 	
 	  return Folder;
 	}(EventEmitter);
@@ -10484,39 +10511,7 @@
 	module.exports = Folder;
 
 /***/ },
-/* 11 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	var backbone = __webpack_require__(12),
-	    _ = __webpack_require__(13),
-	    $ = __webpack_require__(3);
-	
-	var _template = ["<ul>", "<% entries.forEach(function(entry) { %>", "<li>[<%= entry.type %>] <a href='#' data-id='<%= entry.id %>' data-type='<%= entry.type %>'><%= entry.name %></a> (<%= entry.id %>)</li>", "<% }); %>", "</ul>"].join("");
-	
-	var FolderView = Backbone.View.extend({
-	  initialize: function initialize() {
-	    this.listenTo(this.model, 'change', this.render);
-	  },
-	  events: {
-	    "click a": "anchorClicked"
-	  },
-	  template: _.template(_template),
-	  anchorClicked: function anchorClicked(ev) {
-	    var params = { id: ev.target.dataset.id, type: ev.target.dataset.type };
-	    this.trigger("contentClicked", params);
-	  },
-	  render: function render() {
-	    this.$el.html(this.template({ entries: this.model.attributes.item_collection.entries }));
-	    return this;
-	  }
-	});
-	
-	module.exports = FolderView;
-
-/***/ },
-/* 12 */
+/* 10 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(global) {//     Backbone.js 1.3.3
@@ -10535,7 +10530,7 @@
 	
 	  // Set up Backbone appropriately for the environment. Start with AMD.
 	  if (true) {
-	    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(13), __webpack_require__(3), exports], __WEBPACK_AMD_DEFINE_RESULT__ = function(_, $, exports) {
+	    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(11), __webpack_require__(1), exports], __WEBPACK_AMD_DEFINE_RESULT__ = function(_, $, exports) {
 	      // Export global even in AMD case in case this script is loaded with
 	      // others that may still expect a global Backbone.
 	      root.Backbone = factory(root, exports, _, $);
@@ -12443,7 +12438,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
 /***/ },
-/* 13 */
+/* 11 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;//     Underscore.js 1.8.3
@@ -13997,41 +13992,7 @@
 
 
 /***/ },
-/* 14 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-	
-	var backbone = __webpack_require__(12),
-	    _ = __webpack_require__(13);
-	
-	var FolderModel = Backbone.Model.extend({
-	  urlRoot: '/folders',
-	  defaults: {
-	    id: null,
-	    created_by: null,
-	    item_collection: null,
-	    item_status: null,
-	    modified_by: null,
-	    size: null,
-	    type: "folder"
-	  },
-	  parse: function parse(response, options) {
-	    return {
-	      created_by: response.created_by,
-	      item_collection: response.item_collection,
-	      item_status: response.item_status,
-	      modified_by: response.modified_by,
-	      size: response.size,
-	      type: response.type
-	    };
-	  }
-	});
-	
-	module.exports = FolderModel;
-
-/***/ },
-/* 15 */
+/* 12 */
 /***/ function(module, exports) {
 
 	// Copyright Joyent, Inc. and other Node contributors.
@@ -14335,165 +14296,10 @@
 
 
 /***/ },
-/* 16 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-	
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-	
-	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-	
-	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-	
-	var EmbedLinkView = __webpack_require__(17),
-	    EmbedLinkModel = __webpack_require__(18),
-	    EventEmitter = __webpack_require__(15).EventEmitter;
-	
-	var File = function (_EventEmitter) {
-	  _inherits(File, _EventEmitter);
-	
-	  function File(id, element, access_token) {
-	    _classCallCheck(this, File);
-	
-	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(File).call(this));
-	
-	    _this.id = id;
-	    _this.element = element;
-	    _this.access_token = access_token;
-	
-	    _this.embedLinkModel = new EmbedLinkModel({ id: _this.id });
-	
-	    var self = _this;
-	    _this.embedLinkModel.fetch({ data: { access_token: _this.access_token } }).success(function (data) {
-	      console.log(data, self.embedLinkModel);
-	      _this.embedLinkView = new EmbedLinkView({ el: self.element, model: self.embedLinkModel }).render();
-	    });
-	    return _this;
-	  }
-	
-	  return File;
-	}(EventEmitter);
-	
-	module.exports = File;
-
-/***/ },
-/* 17 */
+/* 13 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
-	
-	var backbone = __webpack_require__(12),
-	    _ = __webpack_require__(13);
-	
-	var template_ = ["<iframe src='<%= expiring_embed_link.url %>'></iframe>"].join("");
-	
-	var EmbedLinkView = Backbone.View.extend({
-	  template: _.template(template_),
-	  render: function render() {
-	    console.log(this.model);
-	    this.$el.html(this.template(this.model.attributes));
-	    return this;
-	  }
-	});
-	
-	module.exports = EmbedLinkView;
-
-/***/ },
-/* 18 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-	
-	var backbone = __webpack_require__(12);
-	
-	var EmbedLink = Backbone.Model.extend({
-	  urlRoot: '/embedlink'
-	});
-	
-	module.exports = EmbedLink;
-
-/***/ },
-/* 19 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-	
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-	
-	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-	
-	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-	
-	var MeView = __webpack_require__(20),
-	    MeModel = __webpack_require__(21),
-	    EventEmitter = __webpack_require__(15).EventEmitter;
-	
-	var Me = function (_EventEmitter) {
-	  _inherits(Me, _EventEmitter);
-	
-	  function Me(element, access_token) {
-	    _classCallCheck(this, Me);
-	
-	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Me).call(this));
-	
-	    _this.element = element;
-	    _this.access_token = access_token;
-	
-	    _this.meModel = new MeModel();
-	
-	    var self = _this;
-	    _this.meModel.fetch({ data: { access_token: _this.access_token } }).success(function (data) {
-	      _this.meView = new MeView({ el: self.element, model: self.meModel }).render();
-	    });
-	    return _this;
-	  }
-	
-	  return Me;
-	}(EventEmitter);
-	
-	module.exports = Me;
-
-/***/ },
-/* 20 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-	
-	var backbone = __webpack_require__(12),
-	    _ = __webpack_require__(13);
-	
-	var template_ = ["<span><img src='<%= avatar_url %>'><%= name %></span>"].join("");
-	
-	var MeView = Backbone.View.extend({
-	  template: _.template(template_),
-	  render: function render() {
-	    this.$el.html(this.template(this.model.attributes));
-	    return this;
-	  }
-	});
-	
-	module.exports = MeView;
-
-/***/ },
-/* 21 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-	
-	var backbone = __webpack_require__(12);
-	
-	var MeModel = Backbone.Model.extend({
-	  urlRoot: "/me"
-	});
-	
-	module.exports = MeModel;
-
-/***/ },
-/* 22 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
@@ -14503,65 +14309,354 @@
 	
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 	
-	var ChatModel = __webpack_require__(23),
-	    ChatCollection = __webpack_require__(24),
-	    ChatView = __webpack_require__(25),
-	    EventEmitter = __webpack_require__(15).EventEmitter,
-	    conf = __webpack_require__(9);
+	var backbone = __webpack_require__(10),
+	    _ = __webpack_require__(11),
+	    EventEmitter = __webpack_require__(12).EventEmitter;
 	
-	var Chat = function (_EventEmitter) {
-	  _inherits(Chat, _EventEmitter);
+	////////////////////////////////////////////
+	// template html (underscore)
+	//
+	var template_ = ["<div class='clearfix'>", "<div class='pull-right'>", "&nbsp;<span><%= attr.name %></span>", "&nbsp;<span><img width='50' height='50' src='<%= attr.avatar_url %>'></span>", "</div>", "</div>"].join("");
 	
-	  function Chat(element, name, avatar_url) {
-	    _classCallCheck(this, Chat);
+	////////////////////////////////////////////
+	// Backbone Model
+	//
+	var Model = Backbone.Model.extend({
+	  urlRoot: '/me'
+	});
 	
-	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Chat).call(this));
+	////////////////////////////////////////////
+	// Backbone View
+	//
+	var View = Backbone.View.extend({
+	  template: _.template(template_),
+	  render: function render() {
+	    console.log(this.model.attributes);
+	    this.$el.html(this.template({ attr: this.model.attributes }));
+	  }
+	});
 	
-	    _this.api_key = conf.skyway_api_key;
-	    console.log(_this.api_key);
+	////////////////////////////////////////////
+	// Component
+	//
 	
-	    _this.element = element;
-	    _this.name = name || "Ken";
-	    _this.avatar_url = avatar_url || "https://app.box.com/api/avatar/large/275959193";
+	var Profile = function (_EventEmitter) {
+	  _inherits(Profile, _EventEmitter);
 	
-	    _this.collection = new ChatCollection();
-	    _this.view = new ChatView({ el: _this.element, collection: _this.collection }).render();
+	  function Profile(element, access_token) {
+	    _classCallCheck(this, Profile);
 	
-	    _this.view.on("message", function (mesg) {
-	      _this.add(_this.avatar_url, _this.name, mesg);
-	      _this.multiparty.send({ "type": "chat", "avatar_url": _this.avatar_url, "name": _this.name, "text": mesg });
-	    });
+	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Profile).call(this));
 	
-	    // this.test();
-	    _this.count = 0;
+	    _this.access_token = access_token;
+	    _this.el = element;
 	
+	    _this.model = new Model();
+	    _this.view = new View({ el: _this.el, model: _this.model });
+	
+	    _this.fetch(0);
+	    return _this;
+	  }
+	
+	  _createClass(Profile, [{
+	    key: 'fetch',
+	    value: function fetch(id, callback) {
+	      var _this2 = this;
+	
+	      this.model.fetch({ "data": { "access_token": this.access_token } }).success(function () {
+	        // emit event to component class
+	        _this2.emit("profile", _this2.model.attributes);
+	
+	        // expose callback or render
+	        if (typeof callback === "function") {
+	          callback(_this2.model.attributes);
+	        } else {
+	          _this2.view.render();
+	        };
+	      });
+	    }
+	  }]);
+	
+	  return Profile;
+	}(EventEmitter);
+	
+	module.exports = Profile;
+
+/***/ },
+/* 14 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	
+	var backbone = __webpack_require__(10),
+	    _ = __webpack_require__(11),
+	    EventEmitter = __webpack_require__(12).EventEmitter;
+	
+	////////////////////////////////////////////
+	// template html (underscore)
+	//
+	var template_ = ["<iframe frameborder='0' width='100%' height='100%' src='<%= expiring_embed_link.url %>'></iframe>"].join("");
+	
+	////////////////////////////////////////////
+	// Backbone Model
+	//
+	var Model = Backbone.Model.extend({
+	  urlRoot: "/embedlink"
+	});
+	
+	////////////////////////////////////////////
+	// Backbone View
+	//
+	var View = Backbone.View.extend({
+	  initialize: function initialize() {},
+	  template: _.template(template_),
+	  render: function render() {
+	    this.$el.html(this.template(this.model.attributes));
+	  }
+	});
+	
+	////////////////////////////////////////////
+	// Component
+	//
+	
+	var Preview = function (_EventEmitter) {
+	  _inherits(Preview, _EventEmitter);
+	
+	  function Preview(element, access_token) {
+	    _classCallCheck(this, Preview);
+	
+	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Preview).call(this));
+	
+	    _this.access_token = access_token;
+	    _this.el = element;
+	
+	    _this.model = new Model();
+	    _this.view = new View({ el: _this.el, model: _this.model });
+	    return _this;
+	  }
+	
+	  _createClass(Preview, [{
+	    key: 'fetch',
+	    value: function fetch(file_id) {
+	      var _this2 = this;
+	
+	      this.model.set("id", file_id).fetch({ "data": { "access_token": this.access_token } }).success(function () {
+	        _this2.view.render();
+	      });
+	    }
+	  }]);
+	
+	  return Preview;
+	}(EventEmitter);
+	
+	module.exports = Preview;
+
+/***/ },
+/* 15 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	
+	var backbone = __webpack_require__(10),
+	    _ = __webpack_require__(11),
+	    EventEmitter = __webpack_require__(12).EventEmitter;
+	
+	////////////////////////////////////////////
+	// template html (underscore)
+	//
+	var template_ = ["<iframe frameborder='0' width='100%' height='100%' src='<%= expiring_embed_link.url %>'></iframe>"].join("");
+	
+	////////////////////////////////////////////
+	// Backbone Model
+	//
+	var Model = Backbone.Model.extend({
+	  urlRoot: '/embedlink'
+	});
+	
+	////////////////////////////////////////////
+	// Backbone View
+	//
+	var View = Backbone.View.extend({
+	  initialize: function initialize() {},
+	  template: _.template(template_),
+	  render: function render() {
+	    console.log(this.model.attributes);
+	    this.$el.html(this.template(this.model.attributes));
+	  }
+	});
+	
+	////////////////////////////////////////////
+	// Component
+	//
+	
+	var SlideShare = function (_EventEmitter) {
+	  _inherits(SlideShare, _EventEmitter);
+	
+	  function SlideShare(element, access_token) {
+	    _classCallCheck(this, SlideShare);
+	
+	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(SlideShare).call(this));
+	
+	    _this.access_token = access_token;
+	    _this.el = element;
+	
+	    _this.model = new Model();
+	    _this.view = new View({ el: _this.el, model: _this.model });
+	    return _this;
+	  }
+	
+	  _createClass(SlideShare, [{
+	    key: 'fetch',
+	    value: function fetch(file_id) {
+	      var _this2 = this;
+	
+	      console.log(file_id);
+	      this.model.set("id", file_id).fetch({ "data": { "access_token": this.access_token } }).success(function () {
+	        console.log(_this2.model.attributes);
+	        _this2.view.render();
+	      });
+	    }
+	  }]);
+	
+	  return SlideShare;
+	}(EventEmitter);
+	
+	module.exports = SlideShare;
+
+/***/ },
+/* 16 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	
+	var backbone = __webpack_require__(10),
+	    _ = __webpack_require__(11),
+	    EventEmitter = __webpack_require__(12).EventEmitter;
+	
+	////////////////////////////////////////////
+	// template html (underscore)
+	//
+	var template_ = ["<p>hello component!</p>"].join("");
+	
+	////////////////////////////////////////////
+	// Backbone Model
+	//
+	var Model = Backbone.Model.extend({
+	  urlRoot: '/upload'
+	});
+	
+	////////////////////////////////////////////
+	// Backbone View
+	//
+	var View = Backbone.View.extend({
+	  template: _.template(template_),
+	  events: {
+	    "click button": "onBtnClicked"
+	  },
+	  onBtnClicked: function onBtnClicked(ev) {
+	    alert(0);
+	  },
+	  render: function render() {}
+	});
+	
+	////////////////////////////////////////////
+	// Component
+	//
+	
+	var Upload = function (_EventEmitter) {
+	  _inherits(Upload, _EventEmitter);
+	
+	  function Upload(element, access_token) {
+	    _classCallCheck(this, Upload);
+	
+	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Upload).call(this));
+	
+	    _this.access_token = access_token;
+	    _this.el = element;
+	
+	    _this.model = new Model();
+	    _this.view = new View({ el: _this.el, model: _this.model });
+	    return _this;
+	  }
+	
+	  _createClass(Upload, [{
+	    key: 'fetch',
+	    value: function fetch(txt) {
+	      this.model.fetch({ "data": { "access_token": this.access_token } });
+	    }
+	  }]);
+	
+	  return Upload;
+	}(EventEmitter);
+	
+	module.exports = Upload;
+
+/***/ },
+/* 17 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	
+	var Message = __webpack_require__(18),
+	    Media = __webpack_require__(19),
+	    TextInput = __webpack_require__(20),
+	    EventEmitter = __webpack_require__(12).EventEmitter;
+	
+	var Skyway = function (_EventEmitter) {
+	  _inherits(Skyway, _EventEmitter);
+	
+	  function Skyway(api_key) {
+	    _classCallCheck(this, Skyway);
+	
+	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Skyway).call(this));
+	
+	    if (!api_key) throw "api_key must be set";
+	    console.log(api_key);
+	    _this.profile = {};
+	    _this.api_key = api_key;
+	    _this.message = new Message("#message-view");
+	    _this.media = new Media("#media-view");
+	    _this.textInput = new TextInput("#text-input-view");
 	    _this.startChat();
 	    return _this;
 	  }
 	
-	  _createClass(Chat, [{
-	    key: "test",
-	    value: function test() {
-	      var _this2 = this;
-	
-	      var texts = ["hello", "world", "bye"];
-	
-	      setInterval(function (ev) {
-	        var text = texts[_this2.count % texts.length];_this2.count++;_this2.add("https://app.box.com/api/avatar/large/275959193", "kensaku Komatsu", text);
-	      }, 3000);
-	    }
-	  }, {
-	    key: "add",
-	    value: function add(avatar_url, name, text) {
-	      var curr = new Date();
-	      console.log(curr, text);
-	      var model = new ChatModel({ "avatar_url": avatar_url, "name": name, "text": text, "created_at": curr });
-	      this.collection.add(model);
-	    }
-	  }, {
-	    key: "startChat",
+	  _createClass(Skyway, [{
+	    key: 'startChat',
 	    value: function startChat() {
-	      var _this3 = this;
+	      var _this2 = this;
 	
 	      this.multiparty = new MultiParty({
 	        "key": this.api_key,
@@ -14569,110 +14664,279 @@
 	      });
 	
 	      this.multiparty.on("my_ms", function (video) {
-	        _this3.view.addVideo(video);
+	        console.log("my_ms", video);
+	        _this2.media.add(video);
 	      }).on("peer_ms", function (video) {
-	        _this3.view.addVideo(video);
-	      }).on("ms_close", function (peerid) {
-	        _this3.view.removeVideo(peerid);
-	      }).on('message', function (obj) {
-	        if (obj.data.type === "chat") {
-	          _this3.add(obj.data.avatar_url, obj.data.name, obj.data.text);
-	        }
+	        console.log("peer_ms", video);
+	        _this2.media.add(video);
+	      }).on("ms_close", function (peer_id) {
+	        console.log(peer_id);
+	        _this2.media.remove(peer_id);
+	      });
+	
+	      this.multiparty.on("message", function (mesg) {
+	        _this2.message.add(mesg.data);
+	      });
+	
+	      this.textInput.on("message", function (obj) {
+	        obj.name = _this2.profile && _this2.profile.name || "test user";
+	        obj.avatar_url = _this2.profile && _this2.profile.avatar_url || "";
+	        obj.created_at = new Date();
+	
+	        _this2.message.add(obj);
+	        _this2.multiparty.send(obj);
 	      });
 	
 	      this.multiparty.start();
 	    }
+	  }, {
+	    key: 'setProfile',
+	    value: function setProfile(profile_data) {
+	      this.profile = profile_data;
+	      console.log("setProfile - ", this.profile);
+	    }
 	  }]);
 	
-	  return Chat;
+	  return Skyway;
 	}(EventEmitter);
 	
-	module.exports = Chat;
+	module.exports = Skyway;
 
 /***/ },
-/* 23 */
+/* 18 */
 /***/ function(module, exports, __webpack_require__) {
 
-	"use strict";
+	'use strict';
 	
-	var backbone = __webpack_require__(12);
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var ChatModel = Backbone.Model.extend({});
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
-	module.exports = ChatModel;
-
-/***/ },
-/* 24 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 	
-	var backbone = __webpack_require__(12),
-	    ChatModel = __webpack_require__(23);
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 	
-	var ChatCollection = Backbone.Collection.extend({
-	  model: ChatModel
+	var backbone = __webpack_require__(10),
+	    _ = __webpack_require__(11),
+	    EventEmitter = __webpack_require__(12).EventEmitter;
+	
+	////////////////////////////////////////////
+	// template html (underscore)
+	//
+	var template_ = ["<div class='well well-sm clearfix'>", "<div class='pull-left'>", "<img src='<%= avatar_url %>'>", "</div>", "<div class='message'>", "<span class='name'><%= name %></span><br>", "<span class='message-body'><%= mesg %></span>", "</div>", "</div>"].join("");
+	
+	////////////////////////////////////////////
+	// Backbone Model
+	//
+	var Model = Backbone.Model.extend({});
+	
+	////////////////////////////////////////////
+	// Backbone Collection
+	//
+	var Collection = Backbone.Collection.extend({
+	  model: Model
 	});
 	
-	module.exports = ChatCollection;
-
-/***/ },
-/* 25 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-	
-	var backbone = __webpack_require__(12),
-	    _ = __webpack_require__(13),
-	    $ = __webpack_require__(3);
-	
-	var template_mesg_ = ["<div>", "<div class='chat-avatar'><img src='<%= avatar_url %>'></div>", "<div class='chat-name'><%= name %></div>", "<div class='chat-text'><%= text %></div>", "<div class='chat-created_at'><%= created_at %></div>", "</div>"].join("");
-	
-	var template_video_ = ["<div>", "<video src='<%= url %>' data-peerid='<%= peerid %>' autoplay>", "</div>"].join("");
-	
-	var template_ = ["<h3>chat</h3>", "<div>", "<div>", "<form>", "<input type='text' name='message'>", "<input type='submit' value='send'>", "</form>", "</div>", "<div class='video'>", "</div>", "<div class='message'>", "</div>", "</div>"].join("");
-	
-	var ChatView = Backbone.View.extend({
-	  initialize: function initialize() {
-	    this.listenTo(this.collection, 'add', this.addMesg);
-	  },
-	  events: {
-	    "submit": "onSubmit"
-	  },
-	
-	  onSubmit: function onSubmit(ev) {
-	    ev.preventDefault();
-	    var elem = $(ev.target).find("input[name=message]"),
-	        mesg = elem.val();
-	
-	    this.trigger("message", mesg);
-	    elem.val("");
-	  },
-	
+	////////////////////////////////////////////
+	// Backbone View
+	//
+	var View = Backbone.View.extend({
 	  template: _.template(template_),
-	  template_mesg: _.template(template_mesg_),
-	  template_video: _.template(template_video_),
-	
-	  addVideo: function addVideo(video) {
-	    this.$el.find(".video").append(this.template_video({ peerid: video.id, url: video.src }));
-	  },
-	  removeVideo: function removeVideo(peerid) {
-	    this.$el.find("video[data-peerid=" + peerid + "]").remove();
-	  },
-	
-	  addMesg: function addMesg() {
-	    var model = _.last(this.collection.models);
-	    this.$el.find(".message").append(this.template_mesg(model.attributes));
-	  },
-	  render: function render() {
-	    console.log(this.collection);
-	    this.$el.html(this.template(this.collection));
-	
-	    return this;
+	  add: function add(attr) {
+	    this.$el.append(this.template(attr));
 	  }
 	});
 	
-	module.exports = ChatView;
+	////////////////////////////////////////////
+	// Component
+	//
+	
+	var Message = function (_EventEmitter) {
+	  _inherits(Message, _EventEmitter);
+	
+	  function Message(element) {
+	    _classCallCheck(this, Message);
+	
+	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Message).call(this));
+	
+	    _this.el = element;
+	
+	    _this.collection = new Collection();
+	    _this.view = new View({ el: _this.el, collection: _this.collection });
+	
+	    _this.view.render();
+	    return _this;
+	  }
+	
+	  _createClass(Message, [{
+	    key: 'add',
+	    value: function add(obj) {
+	      console.log("add - ", obj);
+	      var model = new Model(obj);
+	      this.collection.add(model);
+	      this.view.add(model.attributes);
+	    }
+	  }]);
+	
+	  return Message;
+	}(EventEmitter);
+	
+	module.exports = Message;
+
+/***/ },
+/* 19 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	
+	var backbone = __webpack_require__(10),
+	    _ = __webpack_require__(11),
+	    EventEmitter = __webpack_require__(12).EventEmitter,
+	    $ = __webpack_require__(1);
+	
+	////////////////////////////////////////////
+	// template html (underscore)
+	//
+	var template_ = ["<div class='videos clearfix'>", "</div>"].join("");
+	
+	////////////////////////////////////////////
+	// Backbone View
+	//
+	var View = Backbone.View.extend({
+	  template: _.template(template_),
+	  render: function render() {
+	    this.$el.html(this.template());
+	  }
+	});
+	
+	////////////////////////////////////////////
+	// Component
+	//
+	
+	var Media = function (_EventEmitter) {
+	  _inherits(Media, _EventEmitter);
+	
+	  function Media(element) {
+	    _classCallCheck(this, Media);
+	
+	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Media).call(this));
+	
+	    _this.el = element;
+	    _this.view = new View({ el: _this.el });
+	
+	    _this.view.render();
+	    return _this;
+	  }
+	
+	  _createClass(Media, [{
+	    key: 'remove',
+	    value: function remove(id) {
+	      console.log("remove", id);
+	
+	      $(this.el).find("#media-" + id).remove();
+	      this.fit();
+	    }
+	  }, {
+	    key: 'add',
+	    value: function add(video) {
+	      $("#media-" + video.id).remove();
+	      var $video_div = $("<div class='video pull-left'></div>").attr({ "id": "media-" + video.id }),
+	          $video = $("<video autoplay></video>").attr("src", video.src);
+	
+	      $(this.el).find(".videos").append($video_div.append($video));
+	      this.fit();
+	    }
+	  }, {
+	    key: 'fit',
+	    value: function fit() {
+	      var num = $(this.el).find(".video").length,
+	          width = Math.floor(100 / num),
+	          margin = Math.floor((100 - width) / 2);
+	      $(this.el).find(".video").css("width", width + "%");
+	      $(this.el).find("video").css("margin-left", "-" + margin + "%");
+	    }
+	  }]);
+	
+	  return Media;
+	}(EventEmitter);
+	
+	module.exports = Media;
+
+/***/ },
+/* 20 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	
+	var backbone = __webpack_require__(10),
+	    _ = __webpack_require__(11),
+	    $ = __webpack_require__(1),
+	    EventEmitter = __webpack_require__(12).EventEmitter;
+	
+	////////////////////////////////////////////
+	// template html (underscore)
+	//
+	var template_ = ["<div>", "/<div>"].join("");
+	
+	////////////////////////////////////////////
+	// Backbone View
+	//
+	var View = Backbone.View.extend({
+	  template: _.template(template_),
+	  events: {
+	    "submit": "onSubmit"
+	  },
+	  onSubmit: function onSubmit(ev) {
+	    ev.preventDefault();
+	
+	    var $mesg = $(this.el).find("input[name=message]"),
+	        mesg = $mesg.val();
+	    this.trigger("message", { "mesg": mesg });
+	
+	    $mesg.val("");
+	  }
+	});
+	
+	////////////////////////////////////////////
+	// Component
+	//
+	
+	var TextInput = function (_EventEmitter) {
+	  _inherits(TextInput, _EventEmitter);
+	
+	  function TextInput(element) {
+	    _classCallCheck(this, TextInput);
+	
+	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(TextInput).call(this));
+	
+	    _this.el = element;
+	
+	    _this.view = new View({ el: _this.el });
+	
+	    _this.view.on("message", function (obj) {
+	      _this.emit("message", obj);
+	    });
+	    return _this;
+	  }
+	
+	  return TextInput;
+	}(EventEmitter);
+	
+	module.exports = TextInput;
 
 /***/ }
 /******/ ]);

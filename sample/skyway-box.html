@@ -1,27 +1,118 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
   <head>
-    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="/favicon.ico">
 
-    <title></title>
+    <title>box-skyway</title>
+
+    <!-- Bootstrap core CSS -->
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+
+    <!-- Custom styles for this template -->
+    <link href="cover.css" rel="stylesheet">
+
+  </head>
+
+  <body>
+
+    <div class="site-wrapper">
+
+      <div class="site-wrapper-inner">
+
+        <div class="cover-container">
+
+          <div class="masthead clearfix">
+            <div class="inner">
+              <h3 class="masthead-brand"><a href="skyway-box.html">box-skyway</a></h3>
+              <div class="box wf" id="profile-view">
+                #profile-view
+              </div>
+            </div>
+          </div>
+
+          <div class="login">
+            <div class="inner cover wf">
+              <a href="" class="btn btn-info" id="box-login"></a>
+            </div>
+          </div>
+          <div class="mastcontainer wf">
+            <div class="inner cover wf">
+              <div class="wf" id="archive-container">
+                <div class="wf box" id="slideshare-view">
+                  <div class="alert alert-info" role="alert">
+                    <p>
+                    <span class="label label-primary">Tips</span>
+                      Click "share" button in folder view.<br>
+                      Then, you can share selected slide, here.
+                    </p>
+                  </div>
+                </div>
+                <div class="wf box" id="folder-view">
+                  #folder-view
+                </div>
+                <div class="wf box" id="preview-view">
+                  <div class="alert alert-warning" role="alert">
+                    <p>
+                      <span class="label label-primary">Tips</span>
+                        Click "preview" button in folder view.<br>
+                        Then, you can check selected slide, here.<br>
+                        ( without shared ;-) )
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div class="wf" id="realtime-container">
+                <div class="box" id="upload-view">
+                  <button class="btn btn-success btn-xs">Upload</button>
+                </div>
+                <div class="wf skyway" id="message-view">
+                  #message-view
+                </div>
+                <div class="wf skyway" id="text-input-view">
+                  <form class="form-inline">
+                    <div class="form-group">
+                      <input type="text" class="form-control" name="message">
+                    </div>
+                    <button type="submit" class="btn btn-info">Send</button>
+                  </form>
+                </div>
+                <div class="wf skyway" id="media-view">
+                  #media-view
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mastfoot">
+            <div class="inner">
+              <p>&copy; NTT Communciations, 2016. This app is powered by <a href="https://box-content.readme.io/reference">box api</a> and <a href="http://nttcom.github.io/skyway/en/">skyway api</a>.</p>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
     <script src="https://code.jquery.com/jquery-2.2.3.min.js" integrity="sha256-a23g1Nt4dtEYOj7bR+vTu7+T8VP13humZFBJNIYoEJo=" crossorigin="anonymous"></script>
     <script src="https://skyway.io/dist/0.3/peer.js"></script>
     <script src="https://skyway.io/dist/multiparty.js"></script>
 
-  </head>
-  <body>
-    hoge6
-    <a id="box-login"></a>
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
 
-    <div id="box-view">
-      <div id="me-view"></div>
-      <div id="folder-view"></div>
-      <div id="file-view"></div>
-    </div>
+   <script src="./skyway-box.build.js"></script>
 
-    <div id="skyway-view">
-      <div id="chat-view"></div>
-    </div>
-  </body>
-  <script src="./skyway-box.build.js"></script>
-</html>
+   </body>
+  </html>

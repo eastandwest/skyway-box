@@ -8,7 +8,7 @@ switch(process.env.NODE_ENV) {
   case "test":
   default:
     _entry = {
-      "skyway-box": "./sample/skyway-box-entry.js"
+      "skyway-box": "./libs/index.js"
     };
     break;
 }

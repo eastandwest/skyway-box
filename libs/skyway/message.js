@@ -38,6 +38,8 @@ var View = Backbone.View.extend({
   template: _.template(template_),
   add: function(attr) {
     this.$el.append(this.template(attr));
+
+    this.$el[0].scrollTop = this.$el[0].scrollHeight;
   }
 });
 

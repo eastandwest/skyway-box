@@ -51,12 +51,14 @@ class Upload extends EventEmitter {
     });
   }
   post(mesgs) {
+    $(this.el).find("button").attr("disabled", true);
     $.post('/upload', {
       filename: Date.now()+".json",
       access_token: this.access_token,
       folder_id: this.folder_id,
       data: mesgs
     }, (resp) => {
+      $(this.el).find("button").attr("disabled", false);
       console.log("POST /upload succeed", resp);
     },
     "json");

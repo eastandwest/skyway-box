@@ -39,7 +39,6 @@ var State = {
   },
 
   get_authorizeurl: function() {
-    this.renew_stateId();
     return [ this.auth_endpoint, this.gen_param() ].join("?");
   },
   get_stateId: function() {
@@ -47,8 +46,8 @@ var State = {
 
     return id_ ? id_ : this.renew_stateId();
   },
-  renew_stateId: function() {
-    var id_ = md5(new Date());
+  renew_stateId: function(state_id) {
+    var id_ = state_id || md5(new Date());
     sessionStorage[this.key] = id_;
 
     return id_

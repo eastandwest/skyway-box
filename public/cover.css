@@ -182,15 +182,20 @@ body {
   }
 
   .login {
-    position: absolute;
-    margin: auto;
-    top:0;
-    left:0;
-    right:0;
-    bottom:0;
-    width: 80px;
-    height:50px;
-    line-height:50px;
+    padding-top: 30px;
+    color: #000;
+    text-shadow: none;
+  }
+
+  .login form {
+    font-size: 1.8em;
+  }
+  .login form input {
+    width: 500px;
+  }
+  .login .notice {
+    margin-top: 3em;
+    font-size: 1.2em;
   }
 
   .alert {
@@ -238,10 +243,29 @@ body {
     overflow: auto;
   }
 
+  #folder-view ol {
+    color: #ccc;
+    text-shadow: none;
+    text-align: left;
+    margin-bottom:5px;
+  }
+
+  #folder-view ol a {
+    color: rgb(51, 122, 183);
+  }
+  #folder-view ol li.active {
+    font-weight: bold;
+  }
+  #folder-view hr {
+    margin-top: 5px;
+    margin-bottom: 5px;
+  }
+
+
   #folder-view .well {
     color: #000;
     text-shadow: none;
-    margin-bottom: 5px;
+    margin-bottom: 0px;
   }
 
   #preview-view{
@@ -266,13 +290,16 @@ body {
   #upload-view {
     position:fixed;
 
-    top: 70px;
-    right: 15px;
+    top: 55px;
+    right: 5px;
     z-index: 100;
   }
 
   #upload-view button {
-    box-shadow: 3px 3px 3px gray;
+    width: 40px; height:40px;
+    border-radius: 50%;
+    font-weight: normal;
+    box-shadow: 1px 1px 1px gray;
   }
   #message-view {
     position:fixed;
@@ -328,6 +355,14 @@ body {
   }
 
   #text-input-view form {
+  }
+
+  #realtime-container .skyway-logo img {
+    position: fixed;
+    width: 24px; height: 24px;
+    bottom: 45px;
+    right: 5px;
+    z-index: 100;
   }
   #media-view {
     position:fixed;

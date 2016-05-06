@@ -4,6 +4,7 @@ var Message = require('./message')
   , EventEmitter = require("events").EventEmitter
 
 
+
 class Skyway extends EventEmitter {
   constructor(api_key) {
     super();
@@ -21,12 +22,17 @@ class Skyway extends EventEmitter {
   startChat() {
     this.multiparty = new MultiParty( {
       "key": this.api_key,
+      "video": {
+        "width": {"max": 320},
+        "height": {"max": 240},
+        "frameRate": 15
+      },
       "reliable": true
     } );
 
     this.multiparty.on("my_ms", (video) => {
       console.log("my_ms", video);
-      this.media.add(video);
+      this.media.add(video, {mute: true});
     }).on("peer_ms", (video) => {
       console.log("peer_ms", video);
       this.media.add(video);

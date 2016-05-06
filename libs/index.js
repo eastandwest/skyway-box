@@ -2,32 +2,37 @@ var $ = require("jquery")
   , State = require("../libs/base/state")
   , Box = require("./box/index")
   , Skyway = require("./skyway/index")
-  , conf = require("../conf/config.json")
+  , api_key = require("../conf/config.json").skyway_api_key
 
 var token = null, box = null, skyway = null;
 
 
-if(State.is_redirect()) {
-  $(".mastcontainer").show();
+// for app
+var App = {};
+App.start = () => {
+  App.getToken();
+}
+App.getToken = () => {
+  $.get("/token", {"code": State.code}).done((data) => {
+    $(".mastcontainer").show();
 
-  // for debug
-  $.get("/token", {"code": State.code}, (data) => {
     token = JSON.parse(data);
-    console.log(token);
 
-    box = new Box(token.access_token);
-    skyway = new Skyway(conf.skyway_api_key);
+    if(token.access_token) {
+      box = new Box(token.access_token);
+      skyway = new Skyway(api_key);
 
-    setHandler();
+      App.setHandler();
+    } else {
+      console.error(token);
+      location.href = location.pathname;
+    }
+  }).fail((err) => {
+    console.log(err);
   });
-} else {
-  $(".login").show();
-
-  var auth_url = State.get_authorizeurl();
-  $("#box-login").attr("href", auth_url).text("login with box account");
 }
 
-var setHandler = function() {
+App.setHandler = () => {
   // box
   box.on("profile", (profile_data) => {
     skyway.setProfile(profile_data);
@@ -47,3 +52,57 @@ var setHandler = function() {
     box.showSlideShare(embedlinkObj);
   });
 }
+
+
+
+// for login
+var Login = {};
+
+Login.start = () => {
+  $(".login").show();
+
+  if( location.pathname.indexOf("/r/") === 0 ) {
+    let roomname = location.pathname.substring(3);
+    $("#roomname").val(roomname);
+  }
+
+  $("#roomname").on("keyup", function (ev) {
+    console.log(0);
+    var $form = $(this);
+    if ( $form[0].validity.patternMismatch) {
+      $form[0].setCustomValidity("room name should be 4 - 48 bytes of 'a-zA-Z0-9-_'");
+    } else {
+      $form[0].setCustomValidity("");
+    }
+  });
+
+  $("#enter-room").on("submit", function(ev) {
+    ev.preventDefault();
+
+    let roomname = $(this).find("input[name=roomname]").val();
+    console.log(roomname);
+    State.renew_stateId(roomname);
+
+    let auth_url = State.get_authorizeurl();
+    location.href = auth_url;
+  });
+}
+
+
+//////////////////////////////////////
+
+var start = () => {
+  try {
+    if(State.is_redirect()) {
+      App.start();
+    } else {
+      Login.start();
+    }
+  } catch (err) {
+    console.log(err);
+    Login.start();
+  }
+}
+
+$(".login,.mastcontainer").hide();
+start();

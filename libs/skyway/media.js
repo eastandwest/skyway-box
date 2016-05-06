@@ -7,10 +7,14 @@ var backbone = require('backbone')
 // template html (underscore)
 //
 var template_ = [
-  "<div class='videos clearfix'>",
-  "</div>"
-].join("")
-
+    "<div class='videos clearfix'>",
+    "</div>"
+  ].join("")
+  , video_template_ = [
+    "<div class='video pull-left' id='media-<%= id %>'>",
+      "<video autoplay src='<%= src %>' <% if(mute) { %>muted<% } %>></video>",
+    "</div>"
+  ].join("")
 
 
 ////////////////////////////////////////////
@@ -18,6 +22,7 @@ var template_ = [
 //
 var View = Backbone.View.extend({
   template: _.template(template_),
+  video_template: _.template(video_template_),
   render: function() {
     this.$el.html(this.template());
   }
@@ -42,15 +47,20 @@ class Media extends EventEmitter {
     $(this.el).find("#media-"+id).remove();
     this.fit();
   }
-  add(video) {
+  add(video, obj /* when case of my_ms, {"mute" : true} is set */) {
+    // if same id exists, remove it.
     $("#media-"+video.id).remove();
-    var $video_div = $("<div class='video pull-left'></div>").attr({"id": "media-"+video.id})
-      , $video = $("<video autoplay></video>").attr("src", video.src)
 
-    $(this.el).find(".videos").append($video_div.append($video));
+    // create video node
+    video.mute = (obj && obj.mute) || false;
+    let $vNode = $(this.view.video_template(video));
+
+    // attach node and do fit for width
+    $(this.el).find(".videos").append($vNode);
     this.fit();
   }
   fit(){
+    // fit video width to media_view
     var num = $(this.el).find(".video").length
       , width = Math.floor( 100 / num )
       , margin = Math.floor((100 - width) / 2)

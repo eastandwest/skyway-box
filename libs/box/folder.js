@@ -6,6 +6,15 @@ var backbone = require('backbone')
 // template html (underscore)
 //
 var template_ = [
+  "<ol class='breadcrumb'>",
+    "<li><img height='14px' src='/box-logo.svg'></li>",
+  "<% attributes.path_collection.entries.forEach( (entry, i) => { %>",
+    "<li<% if (attributes.path_collection.entries.length === (i + 1)) { %> class='active'<% } %>>",
+    "<a href='#' data-id='<%= entry.id %>' data-action='open'><%= entry.name %></a>",
+    "</li>",
+  "<% }); %>",
+  "</ol>",
+
   "<% attributes.item_collection.entries.forEach( (entry) => { %>",
     "<div class='well well-sm clearfix'>",
       "<div class='pull-left'>",
@@ -13,12 +22,22 @@ var template_ = [
         "<span class='label label-primary'><%= entry.type %></span>&nbsp;",
         " : <%= entry.name %>",
       "</div>",
-      "<% if(entry.type === 'file') { %>",
+      "<% if( entry.type === 'file' && !entry.name.match(/boxnote$/) ) { %>",
       "<div class='pull-right'>",
-        "<button class='btn btn-xs btn-info' data-action='share' data-id='<%= entry.id %>'>share</button>&nbsp;",
-        "<button class='btn btn-xs btn-warning' data-action='preview' data-id='<%= entry.id %>'>preview</button>&nbsp;",
+        "<button class='btn btn-xs btn-info' data-action='share' data-id='<%= entry.id %>'>",
+        "<span class='glyphicon glyphicon-share' aria-hidden='true' data-action='share' data-id='<%= entry.id %>'></span>",
+        "</button>&nbsp;",
+        "<button class='btn btn-xs btn-warning' data-action='preview' data-id='<%= entry.id %>'>",
+        "<span class='glyphicon glyphicon-eye-open' aria-hidden='true' data-action='preview' data-id='<%= entry.id %>'></span>",
+        "</button>&nbsp;",
       "</div>",
-      "<% } %>",
+      "<% } else if (entry.type === 'folder' ) { %>",
+        "<div class='pull-right'>",
+          "<button class='btn btn-xs btn-success' data-action='open' data-id='<%= entry.id %>'>",
+            "<span class='glyphicon glyphicon-circle-arrow-right' aria-hidden='true' data-action='open' data-id='<%= entry.id %>'></span>",
+          "</button>&nbsp;",
+        "</div>",
+      "<% } %> ",
     "</div>",
   "<% }); %>"
 ].join("")
@@ -36,13 +55,14 @@ var Model = Backbone.Model.extend({
 var View = Backbone.View.extend({
   template: _.template(template_),
   events:{
-    "click button": "btnClicked"
+    "click button": "btnClicked",
+    "click a": "btnClicked"
   },
   btnClicked: function(ev){
     let action = ev.target.dataset.action
       , id = ev.target.dataset.id
     console.log("btnClicked - ", id, action);
-    this.trigger("btnClicked", {"file_id": id, "action": action});
+    this.trigger("btnClicked", {"id": id, "action": action});
   },
   render: function() {
     this.$el.html(this.template({
@@ -71,11 +91,14 @@ class Folder extends EventEmitter {
 
     this.view.on("btnClicked", (obj) => {
       switch(obj.action) {
+      case "open":
+        this.fetch(obj.id);
+        break;
       case "share":
-        this.emit("share", obj.file_id);
+        this.emit("share", obj.id);
         break;
       case "preview":
-        this.emit("preview", obj.file_id);
+        this.emit("preview", obj.id);
         break;
       }
     });
@@ -89,11 +112,11 @@ class Folder extends EventEmitter {
       .set("id", folder_id)
       .fetch({"data": {"access_token": this.access_token}})
       .success(() => {
-        if(typeof(callback) === "function") {
-          callback(this.model.attributes);
-        } else {
-          this.view.render();
-        };
+        var id = this.model.attributes.id
+          , name = this.model.attributes.name;
+
+        this.model.attributes.path_collection.entries.push({"id": id, "name": name});
+        this.view.render();
       });
   }
 }

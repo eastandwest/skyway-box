@@ -34,7 +34,7 @@
 /******/ 	__webpack_require__.c = installedModules;
 /******/
 /******/ 	// __webpack_public_path__
-/******/ 	__webpack_require__.p = "sample";
+/******/ 	__webpack_require__.p = "public";
 /******/
 /******/ 	// Load entry module and return exports
 /******/ 	return __webpack_require__(0);
@@ -50,33 +50,38 @@
 	    State = __webpack_require__(2),
 	    Box = __webpack_require__(8),
 	    Skyway = __webpack_require__(17),
-	    conf = __webpack_require__(7);
+	    api_key = __webpack_require__(7).skyway_api_key;
 	
 	var token = null,
 	    box = null,
 	    skyway = null;
 	
-	if (State.is_redirect()) {
-	  $(".mastcontainer").show();
+	// for app
+	var App = {};
+	App.start = function () {
+	  App.getToken();
+	};
+	App.getToken = function () {
+	  $.get("/token", { "code": State.code }).done(function (data) {
+	    $(".mastcontainer").show();
 	
-	  // for debug
-	  $.get("/token", { "code": State.code }, function (data) {
 	    token = JSON.parse(data);
-	    console.log(token);
 	
-	    box = new Box(token.access_token);
-	    skyway = new Skyway(conf.skyway_api_key);
+	    if (token.access_token) {
+	      box = new Box(token.access_token);
+	      skyway = new Skyway(api_key);
 	
-	    setHandler();
+	      App.setHandler();
+	    } else {
+	      console.error(token);
+	      location.href = location.pathname;
+	    }
+	  }).fail(function (err) {
+	    console.log(err);
 	  });
-	} else {
-	  $(".login").show();
+	};
 	
-	  var auth_url = State.get_authorizeurl();
-	  $("#box-login").attr("href", auth_url).text("login with box account");
-	}
-	
-	var setHandler = function setHandler() {
+	App.setHandler = function () {
 	  // box
 	  box.on("profile", function (profile_data) {
 	    skyway.setProfile(profile_data);
@@ -96,6 +101,57 @@
 	    box.showSlideShare(embedlinkObj);
 	  });
 	};
+	
+	// for login
+	var Login = {};
+	
+	Login.start = function () {
+	  $(".login").show();
+	
+	  if (location.pathname.indexOf("/r/") === 0) {
+	    var roomname = location.pathname.substring(3);
+	    $("#roomname").val(roomname);
+	  }
+	
+	  $("#roomname").on("keyup", function (ev) {
+	    console.log(0);
+	    var $form = $(this);
+	    if ($form[0].validity.patternMismatch) {
+	      $form[0].setCustomValidity("room name should be 4 - 48 bytes of 'a-zA-Z0-9-_'");
+	    } else {
+	      $form[0].setCustomValidity("");
+	    }
+	  });
+	
+	  $("#enter-room").on("submit", function (ev) {
+	    ev.preventDefault();
+	
+	    var roomname = $(this).find("input[name=roomname]").val();
+	    console.log(roomname);
+	    State.renew_stateId(roomname);
+	
+	    var auth_url = State.get_authorizeurl();
+	    location.href = auth_url;
+	  });
+	};
+	
+	//////////////////////////////////////
+	
+	var start = function start() {
+	  try {
+	    if (State.is_redirect()) {
+	      App.start();
+	    } else {
+	      Login.start();
+	    }
+	  } catch (err) {
+	    console.log(err);
+	    Login.start();
+	  }
+	};
+	
+	$(".login,.mastcontainer").hide();
+	start();
 
 /***/ },
 /* 1 */
@@ -9986,7 +10042,6 @@
 	  },
 	
 	  get_authorizeurl: function get_authorizeurl() {
-	    this.renew_stateId();
 	    return [this.auth_endpoint, this.gen_param()].join("?");
 	  },
 	  get_stateId: function get_stateId() {
@@ -9994,8 +10049,8 @@
 	
 	    return id_ ? id_ : this.renew_stateId();
 	  },
-	  renew_stateId: function renew_stateId() {
-	    var id_ = md5(new Date());
+	  renew_stateId: function renew_stateId(state_id) {
+	    var id_ = state_id || md5(new Date());
 	    sessionStorage[this.key] = id_;
 	
 	    return id_;
@@ -10451,7 +10506,7 @@
 	////////////////////////////////////////////
 	// template html (underscore)
 	//
-	var template_ = ["<% attributes.item_collection.entries.forEach( (entry) => { %>", "<div class='well well-sm clearfix'>", "<div class='pull-left'>", "<span class='glyphicon <%= icons[entry.type] %> aria-hidden='true'></span>&nbsp;", "<span class='label label-primary'><%= entry.type %></span>&nbsp;", " : <%= entry.name %>", "</div>", "<% if(entry.type === 'file') { %>", "<div class='pull-right'>", "<button class='btn btn-xs btn-info' data-action='share' data-id='<%= entry.id %>'>share</button>&nbsp;", "<button class='btn btn-xs btn-warning' data-action='preview' data-id='<%= entry.id %>'>preview</button>&nbsp;", "</div>", "<% } %>", "</div>", "<% }); %>"].join("");
+	var template_ = ["<ol class='breadcrumb'>", "<li><img height='14px' src='/box-logo.svg'></li>", "<% attributes.path_collection.entries.forEach( (entry, i) => { %>", "<li<% if (attributes.path_collection.entries.length === (i + 1)) { %> class='active'<% } %>>", "<a href='#' data-id='<%= entry.id %>' data-action='open'><%= entry.name %></a>", "</li>", "<% }); %>", "</ol>", "<% attributes.item_collection.entries.forEach( (entry) => { %>", "<div class='well well-sm clearfix'>", "<div class='pull-left'>", "<span class='glyphicon <%= icons[entry.type] %> aria-hidden='true'></span>&nbsp;", "<span class='label label-primary'><%= entry.type %></span>&nbsp;", " : <%= entry.name %>", "</div>", "<% if( entry.type === 'file' && !entry.name.match(/boxnote$/) ) { %>", "<div class='pull-right'>", "<button class='btn btn-xs btn-info' data-action='share' data-id='<%= entry.id %>'>", "<span class='glyphicon glyphicon-share' aria-hidden='true' data-action='share' data-id='<%= entry.id %>'></span>", "</button>&nbsp;", "<button class='btn btn-xs btn-warning' data-action='preview' data-id='<%= entry.id %>'>", "<span class='glyphicon glyphicon-eye-open' aria-hidden='true' data-action='preview' data-id='<%= entry.id %>'></span>", "</button>&nbsp;", "</div>", "<% } else if (entry.type === 'folder' ) { %>", "<div class='pull-right'>", "<button class='btn btn-xs btn-success' data-action='open' data-id='<%= entry.id %>'>", "<span class='glyphicon glyphicon-circle-arrow-right' aria-hidden='true' data-action='open' data-id='<%= entry.id %>'></span>", "</button>&nbsp;", "</div>", "<% } %> ", "</div>", "<% }); %>"].join("");
 	
 	////////////////////////////////////////////
 	// Backbone Model
@@ -10466,13 +10521,14 @@
 	var View = Backbone.View.extend({
 	  template: _.template(template_),
 	  events: {
-	    "click button": "btnClicked"
+	    "click button": "btnClicked",
+	    "click a": "btnClicked"
 	  },
 	  btnClicked: function btnClicked(ev) {
 	    var action = ev.target.dataset.action,
 	        id = ev.target.dataset.id;
 	    console.log("btnClicked - ", id, action);
-	    this.trigger("btnClicked", { "file_id": id, "action": action });
+	    this.trigger("btnClicked", { "id": id, "action": action });
 	  },
 	  render: function render() {
 	    this.$el.html(this.template({
@@ -10506,11 +10562,14 @@
 	
 	    _this.view.on("btnClicked", function (obj) {
 	      switch (obj.action) {
+	        case "open":
+	          _this.fetch(obj.id);
+	          break;
 	        case "share":
-	          _this.emit("share", obj.file_id);
+	          _this.emit("share", obj.id);
 	          break;
 	        case "preview":
-	          _this.emit("preview", obj.file_id);
+	          _this.emit("preview", obj.id);
 	          break;
 	      }
 	    });
@@ -10526,11 +10585,11 @@
 	
 	      var folder_id = id || 0;
 	      this.model.set("id", folder_id).fetch({ "data": { "access_token": this.access_token } }).success(function () {
-	        if (typeof callback === "function") {
-	          callback(_this2.model.attributes);
-	        } else {
-	          _this2.view.render();
-	        };
+	        var id = _this2.model.attributes.id,
+	            name = _this2.model.attributes.name;
+	
+	        _this2.model.attributes.path_collection.entries.push({ "id": id, "name": name });
+	        _this2.view.render();
 	      });
 	    }
 	  }]);
@@ -14654,12 +14713,16 @@
 	  _createClass(Upload, [{
 	    key: 'post',
 	    value: function post(mesgs) {
+	      var _this2 = this;
+	
+	      $(this.el).find("button").attr("disabled", true);
 	      $.post('/upload', {
 	        filename: Date.now() + ".json",
 	        access_token: this.access_token,
 	        folder_id: this.folder_id,
 	        data: mesgs
 	      }, function (resp) {
+	        $(_this2.el).find("button").attr("disabled", false);
 	        console.log("POST /upload succeed", resp);
 	      }, "json");
 	    }
@@ -14720,12 +14783,17 @@
 	
 	      this.multiparty = new MultiParty({
 	        "key": this.api_key,
+	        "video": {
+	          "width": { "max": 320 },
+	          "height": { "max": 240 },
+	          "frameRate": 15
+	        },
 	        "reliable": true
 	      });
 	
 	      this.multiparty.on("my_ms", function (video) {
 	        console.log("my_ms", video);
-	        _this2.media.add(video);
+	        _this2.media.add(video, { mute: true });
 	      }).on("peer_ms", function (video) {
 	        console.log("peer_ms", video);
 	        _this2.media.add(video);
@@ -14838,6 +14906,8 @@
 	  template: _.template(template_),
 	  add: function add(attr) {
 	    this.$el.append(this.template(attr));
+	
+	    this.$el[0].scrollTop = this.$el[0].scrollHeight;
 	  }
 	});
 	
@@ -14917,13 +14987,15 @@
 	////////////////////////////////////////////
 	// template html (underscore)
 	//
-	var template_ = ["<div class='videos clearfix'>", "</div>"].join("");
+	var template_ = ["<div class='videos clearfix'>", "</div>"].join(""),
+	    video_template_ = ["<div class='video pull-left' id='media-<%= id %>'>", "<video autoplay src='<%= src %>' <% if(mute) { %>muted<% } %>></video>", "</div>"].join("");
 	
 	////////////////////////////////////////////
 	// Backbone View
 	//
 	var View = Backbone.View.extend({
 	  template: _.template(template_),
+	  video_template: _.template(video_template_),
 	  render: function render() {
 	    this.$el.html(this.template());
 	  }
@@ -14958,17 +15030,22 @@
 	    }
 	  }, {
 	    key: 'add',
-	    value: function add(video) {
+	    value: function add(video, obj /* when case of my_ms, {"mute" : true} is set */) {
+	      // if same id exists, remove it.
 	      $("#media-" + video.id).remove();
-	      var $video_div = $("<div class='video pull-left'></div>").attr({ "id": "media-" + video.id }),
-	          $video = $("<video autoplay></video>").attr("src", video.src);
 	
-	      $(this.el).find(".videos").append($video_div.append($video));
+	      // create video node
+	      video.mute = obj && obj.mute || false;
+	      var $vNode = $(this.view.video_template(video));
+	
+	      // attach node and do fit for width
+	      $(this.el).find(".videos").append($vNode);
 	      this.fit();
 	    }
 	  }, {
 	    key: 'fit',
 	    value: function fit() {
+	      // fit video width to media_view
 	      var num = $(this.el).find(".video").length,
 	          width = Math.floor(100 / num),
 	          margin = Math.floor((100 - width) / 2);

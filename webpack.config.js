@@ -17,8 +17,8 @@ module.exports = {
   entry: _entry,
   devtool: "source-map",
   output: {
-    path: path.join(__dirname, "sample"),
-    publicPath: "sample",
+    path: path.join(__dirname, "public"),
+    publicPath: "public",
     filename: process.env.NODE_ENV === "production" ? "[name].build.min.js" : "[name].build.js"
   },
   module: {

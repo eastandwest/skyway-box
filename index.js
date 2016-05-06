@@ -16,9 +16,13 @@ var privateKey = fs.readFileSync('cert/server.key', 'utf8')
   , credentials = {key: privateKey, cert: certificate}
   , api = "https://api.box.com/2.0/"
 
+if(process.env.NODE_ENV==="product") {
+  var apphtml = fs.readFileSync(__dirname + "/html/skyway-box.html");
+}
+
 app.use( bodyParser.json() );
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(express.static('sample'));
+app.use(express.static('public'));
 
 ///////////////////////////////////////////////
 // GET /token?code=CODE
@@ -42,6 +46,58 @@ app.get("/token", (req, res) => {
     res.send(body);
   });
 });
+
+///////////////////////////////////////////////
+// app routing
+
+var is_validRoomName = (roomname) => {
+  return !!roomname.match(/^[0-9a-zA-Z-_]{4,48}$/)
+}
+const ROOMNAME_ERROR = "ROOMNAME should be 4 to 48 length of {0-9a-zA-Z-_}";
+
+app.get("/", (req, res) => {
+  if(process.env.NODE_ENV!=="product") {
+    var apphtml = fs.readFileSync(__dirname + "/html/skyway-box.html");
+  }
+  var code = req.query.code, roomname = req.query.state;
+
+  if(code && roomname) {
+    if(is_validRoomName(roomname)) {
+      // If format of room is fine.
+
+      res.redirect("/r/" + roomname + "?code="+code+"&state=" + roomname);
+    } else {
+      // If format of room is bad.
+      res.redirect("/?error=" + encodeURIComponent(ROOMNAME_ERROR));
+    }
+  } else {
+    res.end(apphtml);
+  }
+});
+
+app.get("/r/:room", (req, res) => {
+  if(process.env.NODE_ENV!=="product") {
+    var apphtml = fs.readFileSync(__dirname + "/html/skyway-box.html");
+  }
+  var code = req.query.code, roomname = req.query.state;
+
+  if(code && roomname) {
+    if(is_validRoomName(roomname)) {
+      // If format of room is fine.
+
+      res.end(apphtml);
+    } else {
+      // If format of room is bad.
+      res.redirect("/?error=" + encodeURIComponent("ROOMNAME_ERROR"));
+    }
+  } else {
+    res.end(apphtml);
+  }
+});
+
+
+///////////////////////////////////////////////
+// APIs for box
 
 ///////////////////////////////////////////////
 // GET /me?acccess_token=ACCESS_TOKEN

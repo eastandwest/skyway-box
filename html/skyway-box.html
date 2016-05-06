@@ -16,7 +16,7 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
 
     <!-- Custom styles for this template -->
-    <link href="cover.css" rel="stylesheet">
+    <link href="/cover.css" rel="stylesheet">
 
   </head>
 
@@ -30,7 +30,7 @@
 
           <div class="masthead clearfix">
             <div class="inner">
-              <h3 class="masthead-brand"><a href="skyway-box.html">box-skyway</a></h3>
+              <h3 class="masthead-brand"><a href="/">box-skyway</a></h3>
               <div class="box wf" id="profile-view">
               </div>
             </div>
@@ -39,7 +39,21 @@
           <div class="main-container">
             <div class="login">
               <div class="inner cover wf">
-                <a href="" class="btn btn-info" id="box-login"></a>
+                <div class="jumbotron">
+                  <h1 class="display-3">box-skyway</h1>
+                  <p class="lead">Video conf app with <img src="/box-logo.svg"> and <img src="/skyway-logo.png"></p>
+                  <hr class="m-y-2">
+                  <p class="lead">
+                    <form class="form-inline" id="enter-room">
+                      <div class="form-group">
+                        <label for="roomname">Room name</label>
+                        <input type="text" class="form-control" id="roomname" name="roomname" pattern="[0-9a-zA-Z-_]{4,48}" placeholder="e.g. 'myroom0123'" required>
+                      </div>
+                      <button type="submit" class="btn btn-primary">Enter</button>
+                    </form>
+                  </p>
+                  <div class="notice"><span class="label label-info">Need 'box' account to enter room.</span></div>
+                </div>
               </div>
             </div>
             <div class="mastcontainer wf">
@@ -49,8 +63,8 @@
                     <div class="alert alert-info" role="alert">
                       <p>
                       <span class="label label-primary">Tips</span>
-                        Click "share" button in folder view.<br>
-                        Then, you can share selected slide, here.
+                        Click "<span class='glyphicon glyphicon-share' aria-hidden='true'></span>" in folder view.<br>
+                        You can share it, here.
                       </p>
                     </div>
                   </div>
@@ -60,16 +74,18 @@
                     <div class="alert alert-warning" role="alert">
                       <p>
                         <span class="label label-primary">Tips</span>
-                          Click "preview" button in folder view.<br>
-                          Then, you can check selected slide, here.<br>
-                          ( without shared ;-) )
+                          Click "<span class='glyphicon glyphicon-eye-open' aria-hidden='true'></span>" in folder view.<br>
+                          You can check it, here.<br>
+                          ( not shared ;-) )
                       </p>
                     </div>
                   </div>
                 </div>
                 <div class="wf" id="realtime-container">
                   <div class="box" id="upload-view">
-                    <button class="btn btn-success btn-xs">Upload</button>
+                    <button class="btn btn-primary">
+                      <span class='glyphicon glyphicon-cloud-upload' aria-hidden='true'></span>
+                    </button>
                   </div>
                   <div class="app-component wf skyway" id="message-view">
                   </div>
@@ -81,6 +97,7 @@
                       <button type="submit" class="btn btn-info">Send</button>
                     </form>
                   </div>
+                  <div class="skyway-logo"><img src="/skyway-logo.png"></div>
                   <div class="app-component wf skyway" id="media-view">
                   </div>
                 </div>
@@ -104,13 +121,18 @@
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
     <script src="https://code.jquery.com/jquery-2.2.3.min.js" integrity="sha256-a23g1Nt4dtEYOj7bR+vTu7+T8VP13humZFBJNIYoEJo=" crossorigin="anonymous"></script>
+    <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
     <script src="https://skyway.io/dist/0.3/peer.js"></script>
     <script src="https://skyway.io/dist/multiparty.js"></script>
+
+    <script>
+    </script>
+
 
     <!-- Latest compiled and minified JavaScript -->
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
 
-   <script src="./skyway-box.build.js"></script>
+   <script src="/skyway-box.build.js"></script>
 
    </body>
   </html>

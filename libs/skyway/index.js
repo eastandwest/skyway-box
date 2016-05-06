@@ -35,14 +35,22 @@ class Skyway extends EventEmitter {
       this.media.remove(peer_id);
     });
 
-    this.multiparty.on("message", (mesg) => {
-      this.message.add(mesg.data);
+    this.multiparty.on("message", (recv) => {
+      var obj = recv.data;
+      // check obj.type. if type equal 'embedlink', fire recv:embedlink
+      switch(obj.type) {
+      case "embedlink":
+        this.emit("recv:embedlink", obj.mesg);
+        break;
+      default:
+        // do nothing
+        break;
+      }
+      this.message.add(obj);
     });
 
     this.textInput.on("message", (obj) => {
-      obj.name = (this.profile && this.profile.name) || "test user";
-      obj.avatar_url = (this.profile && this.profile.avatar_url) || "";
-      obj.created_at = new Date();
+      this.addMeta_(obj, "text")
 
       this.message.add(obj);
       this.multiparty.send(obj);
@@ -51,9 +59,31 @@ class Skyway extends EventEmitter {
     this.multiparty.start();
   }
 
+
   setProfile(profile_data) {
     this.profile = profile_data;
     console.log("setProfile - ", this.profile);
+  }
+
+  shareEmbedlink(embedlinkObj) {
+    var obj = {};
+    obj.mesg = embedlinkObj;
+    this.addMeta_(obj, "embedlink")
+
+    this.message.add(obj);
+    this.multiparty.send(obj);
+  }
+
+  reqMessages() {
+    return this.message.getAll();
+  }
+
+  // private
+  addMeta_(obj, type) {
+    obj.type = type || "text";
+    obj.name = (this.profile && this.profile.name) || "test user";
+    obj.avatar_url = (this.profile && this.profile.avatar_url) || "";
+    obj.created_at = new Date();
   }
 }
 

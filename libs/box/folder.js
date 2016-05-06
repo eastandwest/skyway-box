@@ -6,7 +6,6 @@ var backbone = require('backbone')
 // template html (underscore)
 //
 var template_ = [
-  "<ul>",
   "<% attributes.item_collection.entries.forEach( (entry) => { %>",
     "<div class='well well-sm clearfix'>",
       "<div class='pull-left'>",
@@ -21,8 +20,7 @@ var template_ = [
       "</div>",
       "<% } %>",
     "</div>",
-  "<% }); %>",
-  "</ul>"
+  "<% }); %>"
 ].join("")
 
 ////////////////////////////////////////////

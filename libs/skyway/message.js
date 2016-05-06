@@ -8,11 +8,11 @@ var backbone = require('backbone')
 var template_ = [
   "<div class='well well-sm clearfix'>",
     "<div class='pull-left'>",
-      "<img src='<%= avatar_url %>'>",
+      "<img src='<%- avatar_url %>'>",
     "</div>",
     "<div class='message'>",
-      "<span class='name'><%= name %></span><br>",
-      "<span class='message-body'><%= mesg %></span>",
+      "<span class='name'><%- name %> <span class='label label-warning'><%- type %></span></span><br>",
+      "<span class='message-body <%- type %>'><%- outStr %></span>",
     "</div>",
   "</div>"
 ].join("")
@@ -58,9 +58,24 @@ class Message extends EventEmitter {
 
   add(obj) {
     console.log("add - ", obj);
+
+    switch(obj.type) {
+      case "embedlink":
+        obj.outStr = obj.mesg.expiring_embed_link.url;
+        break;
+      case "text":
+      default:
+        obj.outStr = obj.mesg;
+        break;
+    }
+
     var model = new Model(obj);
     this.collection.add(model);
     this.view.add(model.attributes);
+  }
+
+  getAll() {
+    return _.clone(this.collection.models.map( (model) => { return model.attributes } ));
   }
 }
 

@@ -27,15 +27,8 @@ var State = {
     }
 
     this.code = obj.code;
-    this.show_init_link();
 
     return true;
-  },
-  show_init_link: function() {
-    // debug only.
-    $("body").append($("<a>")
-        .attr("href", location.pathname)
-        .text("init login state"));
   },
   gen_param: function() {
     return [

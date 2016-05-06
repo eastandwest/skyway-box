@@ -2,17 +2,27 @@ var express = require('express')
   , app = express()
   , http = require('http')
   , https = require('https')
+  , bodyParser = require('body-parser')
   , fs = require('fs')
   , conf = require("./conf/config.json")
   , request = require("request")
   , curl = require("curlrequest")
+  , FormData = require('form-data')
+  , fs = require('fs')
+
 
 var privateKey = fs.readFileSync('cert/server.key', 'utf8')
   , certificate = fs.readFileSync('cert/server.crt', 'utf8')
   , credentials = {key: privateKey, cert: certificate}
   , api = "https://api.box.com/2.0/"
 
+app.use( bodyParser.json() );
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static('sample'));
+
+///////////////////////////////////////////////
+// GET /token?code=CODE
+//
 
 app.get("/token", (req, res) => {
   var code = req.query.code;
@@ -94,7 +104,7 @@ app.get("/embedlink/:id", (req, res) => {
     "headers": {
       "Authorization": "Bearer " + access_token
     }
-  };
+  }
 
   // todo: error handling
   curl.request(options, (e, body, r) => {
@@ -103,7 +113,47 @@ app.get("/embedlink/:id", (req, res) => {
   });
 });
 
+///////////////////////////////////////////////
+// POST /upload/FILE_ID?filename=FILE_NAME&access_token=ACCESS_TOKEN
+//
+// body: filedata
+app.post("/upload", (req, res) => {
+  var filename = req.body.filename +".txt"
+    , access_token = req.body.access_token
+    , folder_id = parseInt(req.body.folder_id)
+    , file_body = req.body.data;
 
+
+  var tmpfilename = __dirname+"/tmp/"+filename+".tmp";
+  fs.writeFile( tmpfilename, JSON.stringify(file_body), (err) => {
+    if(err) {
+      res.end(err);
+    } else {
+      var options = {
+        "method": "POST",
+        "url": "https://upload.box.com/api/2.0/files/content",
+        "headers": {
+          "Authorization": "Bearer " + access_token
+        },
+        "form" : [
+          "attributes=" + JSON.stringify({"name": filename, "parent": {"id": folder_id}}),
+          "file=@"+tmpfilename
+        ],
+        "trace-ascii": "trace.log"
+      }
+
+      // todo: error handling
+      curl.request(options, (e, body, r) => {
+        fs.unlink(tmpfilename);
+
+        console.log(r);
+        console.log(e, body);
+        res.send(body);
+        res.end();
+      });
+    }
+  });
+});
 
 
 

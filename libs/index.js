@@ -11,12 +11,12 @@ if(State.is_redirect()) {
   $(".mastcontainer").show();
 
   // for debug
-    skyway = new Skyway(conf.skyway_api_key);
   $.get("/token", {"code": State.code}, (data) => {
     token = JSON.parse(data);
     console.log(token);
 
     box = new Box(token.access_token);
+    skyway = new Skyway(conf.skyway_api_key);
 
     setHandler();
   });
@@ -28,7 +28,22 @@ if(State.is_redirect()) {
 }
 
 var setHandler = function() {
+  // box
   box.on("profile", (profile_data) => {
     skyway.setProfile(profile_data);
+  });
+
+  box.on("embedlink", (embedlinkObj) => {
+    skyway.shareEmbedlink(embedlinkObj);
+  });
+
+  box.on("req:skyway:messages", (callback) => {
+    var resp = skyway.reqMessages();
+    if(typeof(callback) === 'function') callback(resp);
+  });
+
+  // skyway
+  skyway.on("recv:embedlink", (embedlinkObj) => {
+    box.showSlideShare(embedlinkObj);
   });
 }

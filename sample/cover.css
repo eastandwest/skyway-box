@@ -171,9 +171,42 @@ body {
     height: 50px;
   }
 
+  .main-container,.login {
+    position: fixed;
+    background: #fff;
+
+    top: 50px;
+    left: 0;
+    right: 0;
+    bottom: 40px;
+  }
+
+  .login {
+    position: absolute;
+    margin: auto;
+    top:0;
+    left:0;
+    right:0;
+    bottom:0;
+    width: 80px;
+    height:50px;
+    line-height:50px;
+  }
+
   .alert {
     margin: 30px 25px;
     text-shadow: none;
+  }
+
+
+  .app-component {
+    border: 1px #eee solid;
+
+    border-radius: 3px;
+    background: #faffff;
+  }
+
+  .box,.skyway {
   }
 
   /* archive-container */
@@ -196,6 +229,7 @@ body {
   #folder-view{
     position: fixed;
 
+    padding: 5px;
     bottom:50px;
     height:230px;
     left: 10px;
@@ -204,8 +238,10 @@ body {
     overflow: auto;
   }
 
-  #folder-view div {
+  #folder-view .well {
     color: #000;
+    text-shadow: none;
+    margin-bottom: 5px;
   }
 
   #preview-view{
@@ -230,9 +266,13 @@ body {
   #upload-view {
     position:fixed;
 
-    top: 65px;
-    right: 10px;
+    top: 70px;
+    right: 15px;
     z-index: 100;
+  }
+
+  #upload-view button {
+    box-shadow: 3px 3px 3px gray;
   }
   #message-view {
     position:fixed;
@@ -241,10 +281,23 @@ body {
     right: 10px;
     width: 290px;
     bottom : 280px;
+
+    padding: 5px;
+
+    overflow: auto;
   }
+
+  #message-view .well {
+    color: #000;
+    text-shadow: none;
+    margin-bottom: 5px;
+  }
+
   #message-view .message {
     text-align: left;
     margin-left: 45px;
+    padding-right: 5px;
+    overflow: hidden;
   }
   #message-view .message .name {
     text-shadow: none;
@@ -252,9 +305,17 @@ body {
     font-weight: normal;
     color: #666;
   }
-  #message-view .message .message-body {
+  #message-view .message .text {
     text-shadow: none;
     color: #000;
+  }
+
+  #message-view .message .embedlink {
+    text-shadow: none;
+    white-space: nowrap;
+    color: #666;
+    font-size: 0.9em;
+    font-style: italic;
   }
 
   #text-input-view {
@@ -306,7 +367,7 @@ body {
 
 
 .wf {
-  border: 1px dashed gray;
+  /* border: 1px dashed gray; */
 }
 
 

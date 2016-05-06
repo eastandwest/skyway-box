@@ -22,9 +22,12 @@ class Box extends EventEmitter {
   }
 
   setHandler() {
+    // Profile
     this.profile.on("profile", (profile_data) => {
       this.emit("profile", profile_data);
     });
+
+    // Folder
     this.folder.on("share", (file_id) => {
       console.log("share - ",file_id);
       this.slideshare.fetch(file_id);
@@ -32,6 +35,21 @@ class Box extends EventEmitter {
     this.folder.on("preview", (file_id) => {
       this.preview.fetch(file_id);
     });
+
+
+    // SlideShare
+    this.slideshare.on("embedlink", (embedlinkObj) => {
+      this.emit("embedlink", embedlinkObj);
+    });
+
+    // Upload
+    this.upload.on("req:skyway:messages", () => {
+      this.emit("req:skyway:messages", (resp) => { this.upload.post(resp); });
+    });
+  }
+
+  showSlideShare(embedlinkObj) {
+    this.slideshare.show(embedlinkObj);
   }
 }
 

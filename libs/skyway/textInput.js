@@ -24,7 +24,8 @@ var View = Backbone.View.extend({
 
     var $mesg = $(this.el).find("input[name=message]")
       , mesg = $mesg.val();
-    this.trigger("message", {"mesg": mesg});
+
+    if(mesg) this.trigger("message", {"mesg": mesg});
 
     $mesg.val("");
   }

@@ -47,6 +47,7 @@ class Preview extends EventEmitter {
       .set("id", file_id)
       .fetch({"data": {"access_token": this.access_token}})
       .success(() => {
+        // render my view
         this.view.render();
       })
   }

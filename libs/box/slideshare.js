@@ -43,13 +43,23 @@ class SlideShare extends EventEmitter {
     this.view = new View({el: this.el, model: this.model});
   }
 
+  show(embedlinkObj) {
+    this.model.set(embedlinkObj);
+    this.view.render();
+  }
+
   fetch(file_id) {
     console.log(file_id);
     this.model
       .set("id", file_id)
       .fetch({"data": {"access_token": this.access_token}})
       .success(() => {
-        console.log(this.model.attributes);
+        // to share fetched embed_link, fire event
+        var embedlinkObj = _.clone(this.model.attributes);
+        console.log(embedlinkObj);
+        this.emit("embedlink", embedlinkObj);
+
+        // render it on my screen
         this.view.render();
       })
   }

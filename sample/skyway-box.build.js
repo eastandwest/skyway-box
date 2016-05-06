@@ -60,12 +60,12 @@
 	  $(".mastcontainer").show();
 	
 	  // for debug
-	  skyway = new Skyway(conf.skyway_api_key);
 	  $.get("/token", { "code": State.code }, function (data) {
 	    token = JSON.parse(data);
 	    console.log(token);
 	
 	    box = new Box(token.access_token);
+	    skyway = new Skyway(conf.skyway_api_key);
 	
 	    setHandler();
 	  });
@@ -77,8 +77,23 @@
 	}
 	
 	var setHandler = function setHandler() {
+	  // box
 	  box.on("profile", function (profile_data) {
 	    skyway.setProfile(profile_data);
+	  });
+	
+	  box.on("embedlink", function (embedlinkObj) {
+	    skyway.shareEmbedlink(embedlinkObj);
+	  });
+	
+	  box.on("req:skyway:messages", function (callback) {
+	    var resp = skyway.reqMessages();
+	    if (typeof callback === 'function') callback(resp);
+	  });
+	
+	  // skyway
+	  skyway.on("recv:embedlink", function (embedlinkObj) {
+	    box.showSlideShare(embedlinkObj);
 	  });
 	};
 
@@ -9963,13 +9978,8 @@
 	    }
 	
 	    this.code = obj.code;
-	    this.show_init_link();
 	
 	    return true;
-	  },
-	  show_init_link: function show_init_link() {
-	    // debug only.
-	    $("body").append($("<a>").attr("href", location.pathname).text("init login state"));
 	  },
 	  gen_param: function gen_param() {
 	    return ["response_type=code", "client_id=" + this.client_id, "state=" + this.get_stateId()].join("&");
@@ -10382,9 +10392,12 @@
 	    value: function setHandler() {
 	      var _this2 = this;
 	
+	      // Profile
 	      this.profile.on("profile", function (profile_data) {
 	        _this2.emit("profile", profile_data);
 	      });
+	
+	      // Folder
 	      this.folder.on("share", function (file_id) {
 	        console.log("share - ", file_id);
 	        _this2.slideshare.fetch(file_id);
@@ -10392,6 +10405,23 @@
 	      this.folder.on("preview", function (file_id) {
 	        _this2.preview.fetch(file_id);
 	      });
+	
+	      // SlideShare
+	      this.slideshare.on("embedlink", function (embedlinkObj) {
+	        _this2.emit("embedlink", embedlinkObj);
+	      });
+	
+	      // Upload
+	      this.upload.on("req:skyway:messages", function () {
+	        _this2.emit("req:skyway:messages", function (resp) {
+	          _this2.upload.post(resp);
+	        });
+	      });
+	    }
+	  }, {
+	    key: "showSlideShare",
+	    value: function showSlideShare(embedlinkObj) {
+	      this.slideshare.show(embedlinkObj);
 	    }
 	  }]);
 	
@@ -10421,7 +10451,7 @@
 	////////////////////////////////////////////
 	// template html (underscore)
 	//
-	var template_ = ["<ul>", "<% attributes.item_collection.entries.forEach( (entry) => { %>", "<div class='well well-sm clearfix'>", "<div class='pull-left'>", "<span class='glyphicon <%= icons[entry.type] %> aria-hidden='true'></span>&nbsp;", "<span class='label label-primary'><%= entry.type %></span>&nbsp;", " : <%= entry.name %>", "</div>", "<% if(entry.type === 'file') { %>", "<div class='pull-right'>", "<button class='btn btn-xs btn-info' data-action='share' data-id='<%= entry.id %>'>share</button>&nbsp;", "<button class='btn btn-xs btn-warning' data-action='preview' data-id='<%= entry.id %>'>preview</button>&nbsp;", "</div>", "<% } %>", "</div>", "<% }); %>", "</ul>"].join("");
+	var template_ = ["<% attributes.item_collection.entries.forEach( (entry) => { %>", "<div class='well well-sm clearfix'>", "<div class='pull-left'>", "<span class='glyphicon <%= icons[entry.type] %> aria-hidden='true'></span>&nbsp;", "<span class='label label-primary'><%= entry.type %></span>&nbsp;", " : <%= entry.name %>", "</div>", "<% if(entry.type === 'file') { %>", "<div class='pull-right'>", "<button class='btn btn-xs btn-info' data-action='share' data-id='<%= entry.id %>'>share</button>&nbsp;", "<button class='btn btn-xs btn-warning' data-action='preview' data-id='<%= entry.id %>'>preview</button>&nbsp;", "</div>", "<% } %>", "</div>", "<% }); %>"].join("");
 	
 	////////////////////////////////////////////
 	// Backbone Model
@@ -14449,6 +14479,7 @@
 	      var _this2 = this;
 	
 	      this.model.set("id", file_id).fetch({ "data": { "access_token": this.access_token } }).success(function () {
+	        // render my view
 	        _this2.view.render();
 	      });
 	    }
@@ -14522,13 +14553,24 @@
 	  }
 	
 	  _createClass(SlideShare, [{
+	    key: 'show',
+	    value: function show(embedlinkObj) {
+	      this.model.set(embedlinkObj);
+	      this.view.render();
+	    }
+	  }, {
 	    key: 'fetch',
 	    value: function fetch(file_id) {
 	      var _this2 = this;
 	
 	      console.log(file_id);
 	      this.model.set("id", file_id).fetch({ "data": { "access_token": this.access_token } }).success(function () {
-	        console.log(_this2.model.attributes);
+	        // to share fetched embed_link, fire event
+	        var embedlinkObj = _.clone(_this2.model.attributes);
+	        console.log(embedlinkObj);
+	        _this2.emit("embedlink", embedlinkObj);
+	
+	        // render it on my screen
 	        _this2.view.render();
 	      });
 	    }
@@ -14555,6 +14597,7 @@
 	
 	var backbone = __webpack_require__(10),
 	    _ = __webpack_require__(11),
+	    $ = __webpack_require__(1),
 	    EventEmitter = __webpack_require__(12).EventEmitter;
 	
 	////////////////////////////////////////////
@@ -14578,7 +14621,7 @@
 	    "click button": "onBtnClicked"
 	  },
 	  onBtnClicked: function onBtnClicked(ev) {
-	    alert(0);
+	    this.trigger("btnClicked");
 	  },
 	  render: function render() {}
 	});
@@ -14600,10 +14643,27 @@
 	
 	    _this.model = new Model();
 	    _this.view = new View({ el: _this.el, model: _this.model });
+	    _this.folder_id = 0; // todo: use specific folder
+	
+	    _this.view.on("btnClicked", function () {
+	      _this.emit("req:skyway:messages");
+	    });
 	    return _this;
 	  }
 	
 	  _createClass(Upload, [{
+	    key: 'post',
+	    value: function post(mesgs) {
+	      $.post('/upload', {
+	        filename: Date.now() + ".json",
+	        access_token: this.access_token,
+	        folder_id: this.folder_id,
+	        data: mesgs
+	      }, function (resp) {
+	        console.log("POST /upload succeed", resp);
+	      }, "json");
+	    }
+	  }, {
 	    key: 'fetch',
 	    value: function fetch(txt) {
 	      this.model.fetch({ "data": { "access_token": this.access_token } });
@@ -14674,14 +14734,22 @@
 	        _this2.media.remove(peer_id);
 	      });
 	
-	      this.multiparty.on("message", function (mesg) {
-	        _this2.message.add(mesg.data);
+	      this.multiparty.on("message", function (recv) {
+	        var obj = recv.data;
+	        // check obj.type. if type equal 'embedlink', fire recv:embedlink
+	        switch (obj.type) {
+	          case "embedlink":
+	            _this2.emit("recv:embedlink", obj.mesg);
+	            break;
+	          default:
+	            // do nothing
+	            break;
+	        }
+	        _this2.message.add(obj);
 	      });
 	
 	      this.textInput.on("message", function (obj) {
-	        obj.name = _this2.profile && _this2.profile.name || "test user";
-	        obj.avatar_url = _this2.profile && _this2.profile.avatar_url || "";
-	        obj.created_at = new Date();
+	        _this2.addMeta_(obj, "text");
 	
 	        _this2.message.add(obj);
 	        _this2.multiparty.send(obj);
@@ -14694,6 +14762,32 @@
 	    value: function setProfile(profile_data) {
 	      this.profile = profile_data;
 	      console.log("setProfile - ", this.profile);
+	    }
+	  }, {
+	    key: 'shareEmbedlink',
+	    value: function shareEmbedlink(embedlinkObj) {
+	      var obj = {};
+	      obj.mesg = embedlinkObj;
+	      this.addMeta_(obj, "embedlink");
+	
+	      this.message.add(obj);
+	      this.multiparty.send(obj);
+	    }
+	  }, {
+	    key: 'reqMessages',
+	    value: function reqMessages() {
+	      return this.message.getAll();
+	    }
+	
+	    // private
+	
+	  }, {
+	    key: 'addMeta_',
+	    value: function addMeta_(obj, type) {
+	      obj.type = type || "text";
+	      obj.name = this.profile && this.profile.name || "test user";
+	      obj.avatar_url = this.profile && this.profile.avatar_url || "";
+	      obj.created_at = new Date();
 	    }
 	  }]);
 	
@@ -14723,7 +14817,7 @@
 	////////////////////////////////////////////
 	// template html (underscore)
 	//
-	var template_ = ["<div class='well well-sm clearfix'>", "<div class='pull-left'>", "<img src='<%= avatar_url %>'>", "</div>", "<div class='message'>", "<span class='name'><%= name %></span><br>", "<span class='message-body'><%= mesg %></span>", "</div>", "</div>"].join("");
+	var template_ = ["<div class='well well-sm clearfix'>", "<div class='pull-left'>", "<img src='<%- avatar_url %>'>", "</div>", "<div class='message'>", "<span class='name'><%- name %> <span class='label label-warning'><%- type %></span></span><br>", "<span class='message-body <%- type %>'><%- outStr %></span>", "</div>", "</div>"].join("");
 	
 	////////////////////////////////////////////
 	// Backbone Model
@@ -14772,9 +14866,27 @@
 	    key: 'add',
 	    value: function add(obj) {
 	      console.log("add - ", obj);
+	
+	      switch (obj.type) {
+	        case "embedlink":
+	          obj.outStr = obj.mesg.expiring_embed_link.url;
+	          break;
+	        case "text":
+	        default:
+	          obj.outStr = obj.mesg;
+	          break;
+	      }
+	
 	      var model = new Model(obj);
 	      this.collection.add(model);
 	      this.view.add(model.attributes);
+	    }
+	  }, {
+	    key: 'getAll',
+	    value: function getAll() {
+	      return _.clone(this.collection.models.map(function (model) {
+	        return model.attributes;
+	      }));
 	    }
 	  }]);
 	
@@ -14905,7 +15017,8 @@
 	
 	    var $mesg = $(this.el).find("input[name=message]"),
 	        mesg = $mesg.val();
-	    this.trigger("message", { "mesg": mesg });
+	
+	    if (mesg) this.trigger("message", { "mesg": mesg });
 	
 	    $mesg.val("");
 	  }

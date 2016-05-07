@@ -9,20 +9,19 @@ var express = require('express')
   , curl = require("curlrequest")
   , FormData = require('form-data')
   , fs = require('fs')
+  , morgan  = require('morgan')
 
 
-var privateKey = fs.readFileSync('cert/server.key', 'utf8')
-  , certificate = fs.readFileSync('cert/server.crt', 'utf8')
+var privateKey = fs.readFileSync(__dirname + '/cert/server.key', 'utf8')
+  , certificate = fs.readFileSync(__dirname + '/cert/server.crt', 'utf8')
   , credentials = {key: privateKey, cert: certificate}
   , api = "https://api.box.com/2.0/"
 
-if(process.env.NODE_ENV==="product") {
-  var apphtml = fs.readFileSync(__dirname + "/html/skyway-box.html");
-}
 
 app.use( bodyParser.json() );
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(express.static('public'));
+app.use(morgan('combined'))
+app.use(express.static(__dirname + '/public'));
 
 ///////////////////////////////////////////////
 // GET /token?code=CODE
@@ -54,11 +53,10 @@ var is_validRoomName = (roomname) => {
   return !!roomname.match(/^[0-9a-zA-Z-_]{4,48}$/)
 }
 const ROOMNAME_ERROR = "ROOMNAME should be 4 to 48 length of {0-9a-zA-Z-_}";
+if(process.env.NODE_ENV==="production") const APPHTML = fs.readFileSync(__dirname + "/html/skyway-box-production.html");
 
 app.get("/", (req, res) => {
-  if(process.env.NODE_ENV!=="product") {
-    var apphtml = fs.readFileSync(__dirname + "/html/skyway-box.html");
-  }
+  var apphtml = process.env.NODE_ENV==="production" ? APPHTML : fs.readFileSync(__dirname + "/html/skyway-box.html");
   var code = req.query.code, roomname = req.query.state;
 
   if(code && roomname) {
@@ -76,9 +74,7 @@ app.get("/", (req, res) => {
 });
 
 app.get("/r/:room", (req, res) => {
-  if(process.env.NODE_ENV!=="product") {
-    var apphtml = fs.readFileSync(__dirname + "/html/skyway-box.html");
-  }
+  var apphtml = process.env.NODE_ENV==="production" ? APPHTML : fs.readFileSync(__dirname + "/html/skyway-box.html");
   var code = req.query.code, roomname = req.query.state;
 
   if(code && roomname) {
@@ -202,8 +198,6 @@ app.post("/upload", (req, res) => {
       curl.request(options, (e, body, r) => {
         fs.unlink(tmpfilename);
 
-        console.log(r);
-        console.log(e, body);
         res.send(body);
         res.end();
       });
@@ -213,7 +207,7 @@ app.post("/upload", (req, res) => {
 
 
 
-var server = process.env.NODE_ENV === "production" ? http.createServer(app) : https.createServer(credentials, app);
+var server = process.env.NODE_ENV === "production" && process.env.SECURE !== "true" ? http.createServer(app) : https.createServer(credentials, app);
 
 server.listen(3000, () => {
   console.log("[%s] app listening of port 3000", process.env.NODE_ENV);

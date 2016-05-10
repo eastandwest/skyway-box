@@ -14,6 +14,7 @@
     <!-- Bootstrap core CSS -->
     <!-- Latest compiled and minified CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.2/css/font-awesome.min.css" crossorigin="anonymous">
 
     <!-- Custom styles for this template -->
     <link href="/cover.css" rel="stylesheet">
@@ -30,7 +31,7 @@
 
           <div class="masthead clearfix">
             <div class="inner">
-              <h3 class="masthead-brand"><a href="/">box-skyway</a></h3>
+              <h3 class="masthead-brand"><a href="/"><span class="ti">BS</span>box-skyway</a></h3>
               <div class="box wf" id="profile-view">
               </div>
             </div>
@@ -60,10 +61,10 @@
               <div class="inner cover wf">
                 <div class="wf" id="archive-container">
                   <div class="app-component wf box" id="slideshare-view">
-                    <div class="alert alert-info" role="alert">
+                    <div class="alert alert-warning" role="alert">
                       <p>
                       <span class="label label-primary">Tips</span>
-                        Click "<span class='glyphicon glyphicon-share' aria-hidden='true'></span>" in folder view.<br>
+                        Click "<span class='fa fa-share-alt-square' aria-hidden='true'></span>" in folder view.<br>
                         You can share it, here.
                       </p>
                     </div>
@@ -74,7 +75,7 @@
                     <div class="alert alert-warning" role="alert">
                       <p>
                         <span class="label label-primary">Tips</span>
-                          Click "<span class='glyphicon glyphicon-eye-open' aria-hidden='true'></span>" in folder view.<br>
+                          Click "<span class='fa fa-eye' aria-hidden='true'></span>" in folder view.<br>
                           You can check it, here.<br>
                           ( not shared ;-) )
                       </p>
@@ -90,11 +91,14 @@
                   <div class="app-component wf skyway" id="message-view">
                   </div>
                   <div class="wf skyway" id="text-input-view">
-                    <form class="form-inline">
-                      <div class="form-group">
+                    <form class="">
+                      <div class="message-view-group">
                         <input type="text" class="form-control" name="message">
                       </div>
-                      <button type="submit" class="btn btn-info">Send</button>
+                      <div class="message-view-group action">
+                        <button type="submit" class="btn btn-primary btn-sm"><span class='fa fa-comment' aria-hidden='true'></span> Send Message</button>
+                        <button type="button" class="btn btn-info btn-sm"><span class='fa fa-cloud-upload' aria-hidden='true'></span> Save to Box</button>
+                      </div>
                     </form>
                   </div>
                   <div class="skyway-logo"><img src="/skyway-logo.png"></div>

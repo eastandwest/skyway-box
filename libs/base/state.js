@@ -1,12 +1,9 @@
 var md5 = require("md5")
   , $ = require("jquery")
-  , conf = require("../../conf/config.json")
 
-// fixme: client_id and client_secret should be loaded from config file
 var State = {
   key: "box-state",
   auth_endpoint: "https://account.box.com/api/oauth2/authorize",
-  client_id: conf.client_id,
   code: null,
 
   is_redirect: function() {
@@ -30,16 +27,28 @@ var State = {
 
     return true;
   },
-  gen_param: function() {
+  gen_param: function(client_id) {
     return [
       "response_type=code",
-      "client_id="+this.client_id,
+      "client_id="+client_id,
       "state="+this.get_stateId()
     ].join("&")
   },
 
-  get_authorizeurl: function() {
-    return [ this.auth_endpoint, this.gen_param() ].join("?");
+  get_authorizeurl: function(callback) {
+    $.ajax({
+      "url": "/client_id",
+      "type": "get",
+      "success": (client_id) => {
+        if(typeof(callback) === "function") {
+          callback( [ this.auth_endpoint, this.gen_param(client_id) ].join("?") );
+        } else {
+          console.log("received client_id:", client_id);
+        }
+      }, "error": (xhr) => {
+        throw xhr.status + ": " + xhr.responseText;
+      }
+    });
   },
   get_stateId: function() {
     var id_ = sessionStorage[this.key];

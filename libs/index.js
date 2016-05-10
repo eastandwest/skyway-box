@@ -2,7 +2,6 @@ var $ = require("jquery")
   , State = require("../libs/base/state")
   , Box = require("./box/index")
   , Skyway = require("./skyway/index")
-  , api_key = require("../conf/config.json").skyway_api_key
 
 var token = null, box = null, skyway = null;
 
@@ -13,22 +12,56 @@ App.start = () => {
   App.getToken();
 }
 App.getToken = () => {
-  $.get("/token", {"code": State.code}).done((data) => {
-    $(".mastcontainer").show();
+  var token = sessionStorage.token;
 
-    token = JSON.parse(data);
+  if(token) {
+    try {
+      // typical case: reload
+      var token_ = JSON.parse(token);
 
-    if(token.access_token) {
-      box = new Box(token.access_token);
+      // todo: check token is valid
+      if(token_.access_token) {
+        $(".mastcontainer").show();
+        App.createFrame(token_.access_token);
+      }
+    } catch(err) {
+      console.error("token parse error");
+    }
+  } else {
+    // typical case:
+    $.get("/token", {"code": State.code}).done((data) => {
+
+      token = JSON.parse(data);
+      sessionStorage.token = JSON.stringify(token);
+
+      if(token.access_token) {
+        $(".mastcontainer").show();
+        App.createFrame(token.access_token);
+      } else {
+        console.error(token);
+        location.href = location.pathname;
+      }
+    }).fail((err) => {
+      console.log(err);
+    });
+  }
+}
+
+
+App.createFrame = (access_token) => {
+  box = new Box(access_token);
+
+  $.ajax({
+    "url": "/api_key",
+    "type": "get",
+    "success": (api_key) => {
       skyway = new Skyway(api_key);
 
       App.setHandler();
-    } else {
-      console.error(token);
-      location.href = location.pathname;
+    },
+    "error": (xhr) => {
+      throw xhr.status + ": " + xhr.responseText;
     }
-  }).fail((err) => {
-    console.log(err);
   });
 }
 
@@ -59,6 +92,7 @@ App.setHandler = () => {
 var Login = {};
 
 Login.start = () => {
+  sessionStorage.token = "";
   $(".login").show();
 
   if( location.pathname.indexOf("/r/") === 0 ) {
@@ -67,7 +101,6 @@ Login.start = () => {
   }
 
   $("#roomname").on("keyup", function (ev) {
-    console.log(0);
     var $form = $(this);
     if ( $form[0].validity.patternMismatch) {
       $form[0].setCustomValidity("room name should be 4 - 48 bytes of 'a-zA-Z0-9-_'");
@@ -80,11 +113,12 @@ Login.start = () => {
     ev.preventDefault();
 
     let roomname = $(this).find("input[name=roomname]").val();
-    console.log(roomname);
     State.renew_stateId(roomname);
 
-    let auth_url = State.get_authorizeurl();
-    location.href = auth_url;
+    State.get_authorizeurl((auth_url) => {
+      // change url to box authorization site
+      location.href = auth_url;
+    });
   });
 }
 

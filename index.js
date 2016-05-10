@@ -10,12 +10,13 @@ var express = require('express')
   , FormData = require('form-data')
   , fs = require('fs')
   , morgan  = require('morgan')
-
+  , log4js = require('log4js')
 
 var privateKey = fs.readFileSync(__dirname + '/cert/server.key', 'utf8')
   , certificate = fs.readFileSync(__dirname + '/cert/server.crt', 'utf8')
   , credentials = {key: privateKey, cert: certificate}
   , api = "https://api.box.com/2.0/"
+  , logger = new log4js.getLogger("root")
 
 
 app.use( bodyParser.json() );
@@ -45,6 +46,39 @@ app.get("/token", (req, res) => {
     res.send(body);
   });
 });
+
+///////////////////////////////////////////////
+// GET /cient_id
+//
+app.get("/client_id", (req, res) => {
+  if( conf.client_id && conf.client_id.match(/^[0-9a-zA-Z]{32}$/)) {
+    res.end(conf.client_id);
+  } else {
+    res.statusCode = 404;
+
+    var mesg = "client_id does not configured, properly";
+    res.end(mesg);
+    logger.warn(mesg, conf.client_id);
+  }
+});
+
+///////////////////////////////////////////////
+// GET /api_key
+//
+app.get("/api_key", (req, res) => {
+  if( conf.skyway_api_key && conf.skyway_api_key.match(/^[0-9a-zA-Z-]{36}$/)) {
+    res.end(conf.skyway_api_key);
+  } else {
+    res.statusCode = 404;
+
+    var mesg = "skyway_api_key does not configured, properly";
+    res.end(mesg);
+    logger.warn(mesg, conf.skyway_api_key);
+  }
+});
+
+
+
 
 ///////////////////////////////////////////////
 // app routing

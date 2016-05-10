@@ -146,19 +146,8 @@
 	    $("#roomname").val(roomname);
 	  }
 	
-	  $("#roomname").on("keyup", function (ev) {
-	    var $form = $(this);
-	    if ($form[0].validity.patternMismatch) {
-	      $form[0].setCustomValidity("room name should be 4 - 48 bytes of 'a-zA-Z0-9-_'");
-	    } else {
-	      $form[0].setCustomValidity("");
-	    }
-	  });
-	
-	  $("#enter-room").on("submit", function (ev) {
-	    ev.preventDefault();
-	
-	    var roomname = $(this).find("input[name=roomname]").val();
+	  $("#btn_create_room").on("click", function (ev) {
+	    var roomname = g_room_name_for_create;
 	    State.renew_stateId(roomname);
 	
 	    State.get_authorizeurl(function (auth_url) {
@@ -166,19 +155,41 @@
 	      location.href = auth_url;
 	    });
 	  });
+	  $("#enter-room").on("submit", function (ev) {
+	    ev.preventDefault();
+	
+	    var roomname = $(this).find("input[name=roomname]").val();
+	    if (roomname.match(/^[0-9a-zA-Z]{32}$/)) {
+	      State.renew_stateId(roomname);
+	
+	      State.get_authorizeurl(function (auth_url) {
+	        // change url to box authorization site
+	        location.href = auth_url;
+	      });
+	    } else {
+	      $("#alert-login-error").show().html("<span class='label label-danger'>Tips</span> Don't you have roomname? Click <strong>Create room</strong>.<br>Or room name shoul be <strong>32 bytes length of numerics and alphabets</strong>. ");
+	    }
+	  });
 	};
 	
 	//////////////////////////////////////
 	
 	var start = function start() {
-	  try {
-	    if (State.is_redirect()) {
-	      App.start();
-	    } else {
+	  if (Modernizr.getusermedia && Modernizr.peerconnection) {
+	    try {
+	      if (State.is_redirect()) {
+	        App.start();
+	      } else {
+	        Login.start();
+	      }
+	    } catch (err) {
+	      console.log(err);
 	      Login.start();
 	    }
-	  } catch (err) {
-	    console.log(err);
+	  } else {
+	    $(".login form").hide();
+	    $("#alert-login-notice").hide();
+	    $("#alert-login-error").show().html("<span class='label label-danger'>Error</span> We don't support this browser. Please use Chrome or Firefox.");
 	    Login.start();
 	  }
 	};
@@ -10539,7 +10550,7 @@
 	////////////////////////////////////////////
 	// template html (underscore)
 	//
-	var template_ = ["<ol class='breadcrumb'>", "<li><img height='14px' src='/box-logo.svg'></li>", "<% attributes.path_collection.entries.forEach( (entry, i) => { %>", "<li<% if (attributes.path_collection.entries.length === (i + 1)) { %> class='active'<% } %>>", "<a href='#' data-id='<%= entry.id %>' data-action='open'><%= entry.name %></a>", "</li>", "<% }); %>", "</ol>", "<% attributes.item_collection.entries.forEach( (entry) => { %>", "<div class='well well-sm clearfix'>", "<div class='pull-left'>", "<% if(entry.type === 'folder') { %>", "<span id='icon_<%= entry.id %>' class=''><img src='/folder30.png'></span>&nbsp;", "<% } else { %>", "<span id='icon_<%= entry.id %>' class=''><img src='/thumbnail/<%= entry.id %>?access_token=<%= access_token %>'></span>&nbsp;", "<% } %>", "<span class='label label-primary'><%= entry.type %></span>&nbsp;", " : <%= entry.name %>", "</div>", "<% if( entry.type === 'file' && !entry.name.match(/boxnote$/) ) { %>", "<div class='pull-right'>", "<button title='Share' class='btn btn-xs btn-info' data-action='share' data-id='<%= entry.id %>'>", "<span class='fa fa-share-alt' aria-hidden='true' data-action='share' data-id='<%= entry.id %>'></span>", "</button>&nbsp;", "<button title='Preview' class='btn btn-xs btn-warning' data-action='preview' data-id='<%= entry.id %>'>", "<span class='fa fa-eye' aria-hidden='true' data-action='preview' data-id='<%= entry.id %>'></span>", "</button>&nbsp;", "</div>", "<% } else if (entry.type === 'folder' ) { %>", "<div class='pull-right'>", "<button class='btn btn-xs btn-success' data-action='open' data-id='<%= entry.id %>'>", "<span class='glyphicon glyphicon-circle-arrow-right' aria-hidden='true' data-action='open' data-id='<%= entry.id %>'></span>", "</button>&nbsp;", "</div>", "<% } %> ", "</div>", "<% }); %>"].join("");
+	var template_ = ["<ol class='breadcrumb'>", "<li><img height='14px' src='/box-logo.svg'></li>", "<% attributes.path_collection.entries.forEach( function(entry, i) { %>", "<li<% if (attributes.path_collection.entries.length === (i + 1)) { %> class='active'<% } %>>", "<a href='#' data-id='<%= entry.id %>' data-action='open'><%= entry.name %></a>", "</li>", "<% }); %>", "</ol>", "<% attributes.item_collection.entries.forEach( function(entry) { %>", "<div class='well well-sm clearfix'>", "<div class='pull-left'>", "<% if(entry.type === 'folder') { %>", "<span id='icon_<%= entry.id %>' class=''><img src='/folder30.png'></span>&nbsp;", "<% } else if(entry.type === 'web_link') { %>", "<span id='icon_<%= entry.id %>' class=''><img src='/link30.png'></span>&nbsp;", "<% } else { %>", "<span id='icon_<%= entry.id %>' class=''><img src='/thumbnail/<%= entry.id %>?access_token=<%= access_token %>'></span>&nbsp;", "<% } %>", "<span class='label label-primary'><%= entry.type %></span>&nbsp;", " : <%= entry.name %>", "</div>", "<% if( entry.type === 'file' && !entry.name.match(/boxnote$/) ) { %>", "<div class='pull-right'>", "<button title='Share' class='btn btn-xs btn-info' data-action='share' data-id='<%= entry.id %>'>", "<span class='fa fa-share-alt' aria-hidden='true' data-action='share' data-id='<%= entry.id %>'></span>", "</button>&nbsp;", "<button title='Preview' class='btn btn-xs btn-warning' data-action='preview' data-id='<%= entry.id %>'>", "<span class='fa fa-eye' aria-hidden='true' data-action='preview' data-id='<%= entry.id %>'></span>", "</button>&nbsp;", "</div>", "<% } else if (entry.type === 'folder' ) { %>", "<div class='pull-right'>", "<button class='btn btn-xs btn-success' data-action='open' data-id='<%= entry.id %>'>", "<span class='glyphicon glyphicon-circle-arrow-right' aria-hidden='true' data-action='open' data-id='<%= entry.id %>'></span>", "</button>&nbsp;", "</div>", "<% } %> ", "</div>", "<% }); %>"].join("");
 	
 	////////////////////////////////////////////
 	// Backbone Model

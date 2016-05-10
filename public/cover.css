@@ -256,8 +256,8 @@ body {
   .login form {
     font-size: 1.8em;
   }
-  .login form input {
-    width: 500px;
+  .login form input[type=text] {
+    width: 350px;
   }
   .login .notice {
     margin-top: 3em;

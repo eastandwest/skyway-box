@@ -100,25 +100,30 @@ Login.start = () => {
     $("#roomname").val(roomname);
   }
 
-  $("#roomname").on("keyup", function (ev) {
-    var $form = $(this);
-    if ( $form[0].validity.patternMismatch) {
-      $form[0].setCustomValidity("room name should be 4 - 48 bytes of 'a-zA-Z0-9-_'");
-    } else {
-      $form[0].setCustomValidity("");
-    }
-  });
-
-  $("#enter-room").on("submit", function(ev) {
-    ev.preventDefault();
-
-    let roomname = $(this).find("input[name=roomname]").val();
+  $("#btn_create_room").on("click", function(ev) {
+    let roomname = g_room_name_for_create;
     State.renew_stateId(roomname);
 
     State.get_authorizeurl((auth_url) => {
       // change url to box authorization site
       location.href = auth_url;
     });
+
+  });
+  $("#enter-room").on("submit", function(ev) {
+    ev.preventDefault();
+
+    let roomname = $(this).find("input[name=roomname]").val();
+    if(roomname.match(/^[0-9a-zA-Z]{32}$/)) {
+      State.renew_stateId(roomname);
+
+      State.get_authorizeurl((auth_url) => {
+        // change url to box authorization site
+        location.href = auth_url;
+      });
+    } else {
+      $("#alert-login-error").show().html("<span class='label label-danger'>Tips</span> Don't you have roomname? Click <strong>Create room</strong>.<br>Or room name shoul be <strong>32 bytes length of numerics and alphabets</strong>. ");
+    }
   });
 }
 
@@ -126,14 +131,21 @@ Login.start = () => {
 //////////////////////////////////////
 
 var start = () => {
-  try {
-    if(State.is_redirect()) {
-      App.start();
-    } else {
+  if(Modernizr.getusermedia && Modernizr.peerconnection) {
+    try {
+      if(State.is_redirect()) {
+        App.start();
+      } else {
+        Login.start();
+      }
+    } catch (err) {
+      console.log(err);
       Login.start();
     }
-  } catch (err) {
-    console.log(err);
+  } else {
+    $(".login form").hide();
+    $("#alert-login-notice").hide();
+    $("#alert-login-error").show().html("<span class='label label-danger'>Error</span> We don't support this browser. Please use Chrome or Firefox.");
     Login.start();
   }
 }

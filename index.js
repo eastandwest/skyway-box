@@ -8,7 +8,7 @@ var express = require('express')
   , request = require("request")
   , curl = require("curlrequest")
   , FormData = require('form-data')
-  , fs = require('fs')
+  , md5 = require('md5')
   , morgan  = require('morgan')
   , log4js = require('log4js')
   , _ = require('underscore')
@@ -85,22 +85,21 @@ app.get("/api_key", (req, res) => {
 // app routing
 
 var is_validRoomName = (roomname) => {
-  return !!roomname.match(/^[0-9a-zA-Z-_]{4,48}$/)
+  return !!roomname.match(/^[0-9a-zA-Z-_]{32}$/)
 }
-const ROOMNAME_ERROR = "ROOMNAME should be 4 to 48 length of {0-9a-zA-Z-_}";
+const ROOMNAME_ERROR = "ROOMNAME should be 32 length mix of numeric and alphabet";
 if(process.env.NODE_ENV==="production") {
   var tmpl = fs.readFileSync(__dirname + "/html/skyway-box.html.tmpl").toString();
-  const APPHTML = _.template(tmpl)({js: "skyway-box.build.min.js"});
+  const PROD_TMPL = _.template(tmpl)({js: "skyway-box.build.min.js"});
 }
 
 app.get("/", (req, res) => {
   var apphtml = ( () => {
     if( process.env.NODE_ENV==="production" ) {
-      return APPHTML;
+      return PROD_TMPL_({js: "skyway-box.build.min.js", "room_name_for_create": md5(new Date())});
     } else {
       var tmpl = fs.readFileSync(__dirname + "/html/skyway-box.html.tmpl").toString();
-      console.log(tmpl);
-      return _.template(tmpl)({js: "skyway-box.build.js"});
+      return _.template(tmpl)({js: "skyway-box.build.js", "room_name_for_create": md5(new Date())});
     }
   })();
   var code = req.query.code, roomname = req.query.state;
@@ -120,7 +119,15 @@ app.get("/", (req, res) => {
 });
 
 app.get("/r/:room", (req, res) => {
-  var apphtml = process.env.NODE_ENV==="production" ? APPHTML : fs.readFileSync(__dirname + "/html/skyway-box.html");
+  var apphtml = ( () => {
+    if( process.env.NODE_ENV==="production" ) {
+      return PROD_TMPL_({js: "skyway-box.build.min.js", "room_name_for_create": md5(new Date())});
+    } else {
+      var tmpl = fs.readFileSync(__dirname + "/html/skyway-box.html.tmpl").toString();
+      return _.template(tmpl)({js: "skyway-box.build.js", "room_name_for_create": md5(new Date())});
+    }
+  })();
+
   var code = req.query.code, roomname = req.query.state;
 
   if(code && roomname) {
@@ -191,6 +198,7 @@ app.get("/folders/:id", (req, res) => {
 ///////////////////////////////////////////////
 // GET /thumbnail/FILE_ID?access_token=ACCESS_TOKEN
 //
+var file_black_red = fs.readFileSync(__dirname+"/public/file-black-red-30.png");
 app.get("/thumbnail/:id", (req, res) => {
   var file_id = req.params.id
     , access_token = req.query.access_token;
@@ -225,6 +233,9 @@ app.get("/thumbnail/:id", (req, res) => {
       res.statusCode = 302;
       res.setHeader("location", headers.location);
       res.end();
+    } else if(statusCode === 404) {
+      res.statusCode = 200;
+      res.end(file_black_red);
     } else {
       res.statusCode = statusCode;
       response.on("data", (chunk) => {

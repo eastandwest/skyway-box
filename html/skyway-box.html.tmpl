@@ -47,13 +47,19 @@
                   <p class="lead">
                     <form class="form-inline" id="enter-room">
                       <div class="form-group">
-                        <label for="roomname">Room name</label>
-                        <input type="text" class="form-control" id="roomname" name="roomname" pattern="[0-9a-zA-Z-_]{4,48}" placeholder="e.g. 'myroom0123'" required>
+                        <input type="button" id="btn_create_room" class="btn btn-primary" value="Create Room">
                       </div>
-                      <button type="submit" class="btn btn-primary">Enter</button>
+                      <div class="form-group">
+                        or
+                      </div>
+                      <div class="form-group">
+                        <input type="text" class="form-control" id="roomname" name="roomname" placeholder="input room name" required>
+                      </div>
+                      <button type="submit" class="btn btn-info">Enter Existing Room</button>
                     </form>
                   </p>
-                  <div class="notice"><span class="label label-info">Need 'box' account to enter room.</span></div>
+                  <div class="notice alert alert-info" id="alert-login-notice"><span class="label label-info">Notes</span> <strong>Need</strong> <a href="https://www.box.com/" target="_blank"><img height="15" src="/box-logo.svg"></a> account to enter room.</div>
+                  <div class="alert alert-danger" id="alert-login-error" style="display:none;"></div>
                 </div>
               </div>
             </div>
@@ -129,7 +135,10 @@
     <script src="https://skyway.io/dist/0.3/peer.js"></script>
     <script src="https://skyway.io/dist/multiparty.js"></script>
 
+    <script src="/modernizr_webrtc.js"></script>
+
     <script>
+    var g_room_name_for_create = "<%= room_name_for_create %>";
     </script>
 
 

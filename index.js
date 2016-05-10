@@ -11,6 +11,7 @@ var express = require('express')
   , fs = require('fs')
   , morgan  = require('morgan')
   , log4js = require('log4js')
+  , _ = require('underscore')
 
 var privateKey = fs.readFileSync(__dirname + '/cert/server.key', 'utf8')
   , certificate = fs.readFileSync(__dirname + '/cert/server.crt', 'utf8')
@@ -87,10 +88,21 @@ var is_validRoomName = (roomname) => {
   return !!roomname.match(/^[0-9a-zA-Z-_]{4,48}$/)
 }
 const ROOMNAME_ERROR = "ROOMNAME should be 4 to 48 length of {0-9a-zA-Z-_}";
-if(process.env.NODE_ENV==="production") const APPHTML = fs.readFileSync(__dirname + "/html/skyway-box-production.html");
+if(process.env.NODE_ENV==="production") {
+  var tmpl = fs.readFileSync(__dirname + "/html/skyway-box.html.tmpl").toString();
+  const APPHTML = _.template(tmpl)({js: "skyway-box.build.min.js"});
+}
 
 app.get("/", (req, res) => {
-  var apphtml = process.env.NODE_ENV==="production" ? APPHTML : fs.readFileSync(__dirname + "/html/skyway-box.html");
+  var apphtml = ( () => {
+    if( process.env.NODE_ENV==="production" ) {
+      return APPHTML;
+    } else {
+      var tmpl = fs.readFileSync(__dirname + "/html/skyway-box.html.tmpl").toString();
+      console.log(tmpl);
+      return _.template(tmpl)({js: "skyway-box.build.js"});
+    }
+  })();
   var code = req.query.code, roomname = req.query.state;
 
   if(code && roomname) {

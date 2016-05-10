@@ -8,8 +8,8 @@ var backbone = require('backbone')
 var template_ = [
   "<div class='clearfix'>",
     "<div class='pull-right'>",
-      "&nbsp;<span><%= attr.name %></span>",
-      "&nbsp;<span><img width='50' height='50' src='<%= attr.avatar_url %>'></span>",
+      "&nbsp;<span class=\"profile-name\"><%= attr.name %></span>",
+      "&nbsp;<span class=\"profile-img\"><img width='40' height='40' src='<%= attr.avatar_url %>'></span>",
     "</div>",
   "</div>"
 ].join("")

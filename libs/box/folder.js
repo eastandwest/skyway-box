@@ -18,7 +18,11 @@ var template_ = [
   "<% attributes.item_collection.entries.forEach( (entry) => { %>",
     "<div class='well well-sm clearfix'>",
       "<div class='pull-left'>",
-        "<span class='glyphicon <%= icons[entry.type] %> aria-hidden='true'></span>&nbsp;",
+        "<% if(entry.type === 'folder') { %>",
+          "<span id='icon_<%= entry.id %>' class=''><img src='/folder30.png'></span>&nbsp;",
+        "<% } else { %>",
+          "<span id='icon_<%= entry.id %>' class=''><img src='/thumbnail/<%= entry.id %>?access_token=<%= access_token %>'></span>&nbsp;",
+        "<% } %>",
         "<span class='label label-primary'><%= entry.type %></span>&nbsp;",
         " : <%= entry.name %>",
       "</div>",
@@ -45,11 +49,12 @@ var template_ = [
 ////////////////////////////////////////////
 // Backbone Model
 //
-var Model = Backbone.Model.extend({
+var FolderModel = Backbone.Model.extend({
   urlRoot: '/folders'
 });
 
-////////////////////////////////////////////
+
+///////////////////////////////////////////
 // Backbone View
 //
 var View = Backbone.View.extend({
@@ -66,6 +71,7 @@ var View = Backbone.View.extend({
   },
   render: function() {
     this.$el.html(this.template({
+      "access_token": this.access_token,
       "attributes": this.model.attributes,
       "icons": {
         "folder": "glyphicon-folder-close",
@@ -86,8 +92,10 @@ class Folder extends EventEmitter {
     this.access_token = access_token;
     this.el = element;
 
-    this.model = new Model();
-    this.view = new View({el: this.el, model: this.model});
+    this.folder_model = new FolderModel();
+    this.view = new View({el: this.el, model: this.folder_model});
+    this.view.access_token = access_token;
+    console.dir(this.view);
 
     this.view.on("btnClicked", (obj) => {
       switch(obj.action) {
@@ -108,14 +116,14 @@ class Folder extends EventEmitter {
 
   fetch(id, callback) {
     let folder_id = id || 0;
-    this.model
+    this.folder_model
       .set("id", folder_id)
       .fetch({"data": {"access_token": this.access_token}})
       .success(() => {
-        var id = this.model.attributes.id
-          , name = this.model.attributes.name;
+        var id = this.folder_model.attributes.id
+          , name = this.folder_model.attributes.name;
 
-        this.model.attributes.path_collection.entries.push({"id": id, "name": name});
+        this.folder_model.attributes.path_collection.entries.push({"id": id, "name": name});
         this.view.render();
       });
   }

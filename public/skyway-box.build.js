@@ -10209,16 +10209,16 @@
 	////////////////////////////////////////////
 	// template html (underscore)
 	//
-	var template_ = ["<ol class='breadcrumb'>", "<li><img height='14px' src='/box-logo.svg'></li>", "<% attributes.path_collection.entries.forEach( (entry, i) => { %>", "<li<% if (attributes.path_collection.entries.length === (i + 1)) { %> class='active'<% } %>>", "<a href='#' data-id='<%= entry.id %>' data-action='open'><%= entry.name %></a>", "</li>", "<% }); %>", "</ol>", "<% attributes.item_collection.entries.forEach( (entry) => { %>", "<div class='well well-sm clearfix'>", "<div class='pull-left'>", "<span class='glyphicon <%= icons[entry.type] %> aria-hidden='true'></span>&nbsp;", "<span class='label label-primary'><%= entry.type %></span>&nbsp;", " : <%= entry.name %>", "</div>", "<% if( entry.type === 'file' && !entry.name.match(/boxnote$/) ) { %>", "<div class='pull-right'>", "<button class='btn btn-xs btn-info' data-action='share' data-id='<%= entry.id %>'>", "<span class='glyphicon glyphicon-share' aria-hidden='true' data-action='share' data-id='<%= entry.id %>'></span>", "</button>&nbsp;", "<button class='btn btn-xs btn-warning' data-action='preview' data-id='<%= entry.id %>'>", "<span class='glyphicon glyphicon-eye-open' aria-hidden='true' data-action='preview' data-id='<%= entry.id %>'></span>", "</button>&nbsp;", "</div>", "<% } else if (entry.type === 'folder' ) { %>", "<div class='pull-right'>", "<button class='btn btn-xs btn-success' data-action='open' data-id='<%= entry.id %>'>", "<span class='glyphicon glyphicon-circle-arrow-right' aria-hidden='true' data-action='open' data-id='<%= entry.id %>'></span>", "</button>&nbsp;", "</div>", "<% } %> ", "</div>", "<% }); %>"].join("");
+	var template_ = ["<ol class='breadcrumb'>", "<li><img height='14px' src='/box-logo.svg'></li>", "<% attributes.path_collection.entries.forEach( (entry, i) => { %>", "<li<% if (attributes.path_collection.entries.length === (i + 1)) { %> class='active'<% } %>>", "<a href='#' data-id='<%= entry.id %>' data-action='open'><%= entry.name %></a>", "</li>", "<% }); %>", "</ol>", "<% attributes.item_collection.entries.forEach( (entry) => { %>", "<div class='well well-sm clearfix'>", "<div class='pull-left'>", "<% if(entry.type === 'folder') { %>", "<span id='icon_<%= entry.id %>' class=''><img src='/folder30.png'></span>&nbsp;", "<% } else { %>", "<span id='icon_<%= entry.id %>' class=''><img src='/thumbnail/<%= entry.id %>?access_token=<%= access_token %>'></span>&nbsp;", "<% } %>", "<span class='label label-primary'><%= entry.type %></span>&nbsp;", " : <%= entry.name %>", "</div>", "<% if( entry.type === 'file' && !entry.name.match(/boxnote$/) ) { %>", "<div class='pull-right'>", "<button class='btn btn-xs btn-info' data-action='share' data-id='<%= entry.id %>'>", "<span class='glyphicon glyphicon-share' aria-hidden='true' data-action='share' data-id='<%= entry.id %>'></span>", "</button>&nbsp;", "<button class='btn btn-xs btn-warning' data-action='preview' data-id='<%= entry.id %>'>", "<span class='glyphicon glyphicon-eye-open' aria-hidden='true' data-action='preview' data-id='<%= entry.id %>'></span>", "</button>&nbsp;", "</div>", "<% } else if (entry.type === 'folder' ) { %>", "<div class='pull-right'>", "<button class='btn btn-xs btn-success' data-action='open' data-id='<%= entry.id %>'>", "<span class='glyphicon glyphicon-circle-arrow-right' aria-hidden='true' data-action='open' data-id='<%= entry.id %>'></span>", "</button>&nbsp;", "</div>", "<% } %> ", "</div>", "<% }); %>"].join("");
 	
 	////////////////////////////////////////////
 	// Backbone Model
 	//
-	var Model = Backbone.Model.extend({
+	var FolderModel = Backbone.Model.extend({
 	  urlRoot: '/folders'
 	});
 	
-	////////////////////////////////////////////
+	///////////////////////////////////////////
 	// Backbone View
 	//
 	var View = Backbone.View.extend({
@@ -10235,6 +10235,7 @@
 	  },
 	  render: function render() {
 	    this.$el.html(this.template({
+	      "access_token": this.access_token,
 	      "attributes": this.model.attributes,
 	      "icons": {
 	        "folder": "glyphicon-folder-close",
@@ -10260,8 +10261,10 @@
 	    _this.access_token = access_token;
 	    _this.el = element;
 	
-	    _this.model = new Model();
-	    _this.view = new View({ el: _this.el, model: _this.model });
+	    _this.folder_model = new FolderModel();
+	    _this.view = new View({ el: _this.el, model: _this.folder_model });
+	    _this.view.access_token = access_token;
+	    console.dir(_this.view);
 	
 	    _this.view.on("btnClicked", function (obj) {
 	      switch (obj.action) {
@@ -10287,11 +10290,11 @@
 	      var _this2 = this;
 	
 	      var folder_id = id || 0;
-	      this.model.set("id", folder_id).fetch({ "data": { "access_token": this.access_token } }).success(function () {
-	        var id = _this2.model.attributes.id,
-	            name = _this2.model.attributes.name;
+	      this.folder_model.set("id", folder_id).fetch({ "data": { "access_token": this.access_token } }).success(function () {
+	        var id = _this2.folder_model.attributes.id,
+	            name = _this2.folder_model.attributes.name;
 	
-	        _this2.model.attributes.path_collection.entries.push({ "id": id, "name": name });
+	        _this2.folder_model.attributes.path_collection.entries.push({ "id": id, "name": name });
 	        _this2.view.render();
 	      });
 	    }

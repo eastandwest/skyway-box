@@ -177,6 +177,78 @@ app.get("/folders/:id", (req, res) => {
 });
 
 ///////////////////////////////////////////////
+// GET /thumbnail/FILE_ID?access_token=ACCESS_TOKEN
+//
+app.get("/thumbnail/:id", (req, res) => {
+  var file_id = req.params.id
+    , access_token = req.query.access_token;
+
+  // , api = "https://api.box.com/2.0/"
+  //
+  console.log(file_id);
+  var req = https.request({
+    "protocol": "https:",
+    "hostname": "api.box.com",
+    "path": "/2.0/files/" + file_id + "/thumbnail.png",
+    "headers": {
+      "Authorization": "Bearer " + access_token
+    }
+  }, (response) => {
+    var statusCode = response.statusCode;
+    var headers = response.headers;
+    console.log(statusCode);
+
+    if(statusCode === 200) {
+      res.setHeader("content-type", "image/png");
+
+      response.on("data", (chunk) => {
+        console.log(chunk.length);
+        res.send(chunk);
+      });
+
+      response.on("end", () => {
+        res.end();
+      });
+    } else if(statusCode === 302) {
+      res.statusCode = 302;
+      res.setHeader("location", headers.location);
+      res.end();
+    } else {
+      res.statusCode = statusCode;
+      response.on("data", (chunk) => {
+        res.send(chunk);
+      });
+
+      response.on("end", () => {
+        res.end();
+      });
+    };
+  });
+
+  req.end();
+
+
+
+  // fixme: fix hardcode of url
+  // var options = {
+  //   "method": "GET",
+  //   "url": api + "files/" + file_id + "/thumbnail.png",
+  //   "headers": {
+  //     "Authorization": "Bearer " + access_token
+  //   },
+  //       "trace-ascii": "trace2.log"
+  // };
+
+  // // todo: error handling
+  // curl.request(options, (e, body, r) => {
+  //   res.setHeader("content-type", "image/gif");
+  //   res.send(body);
+  //   res.end();
+  // });
+});
+
+
+///////////////////////////////////////////////
 // GET /embedlink/FILE_ID?access_token=ACCESS_TOKEN
 //
 app.get("/embedlink/:id", (req, res) => {

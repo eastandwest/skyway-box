@@ -8,7 +8,7 @@ var backbone = require('backbone')
 var template_ = [
   "<div class='well well-sm clearfix'>",
     "<div class='pull-left'>",
-      "<img src='<%- avatar_url %>'>",
+      "<img class=\"msg-icon\" src='<%- avatar_url %>'>",
     "</div>",
     "<div class='message'>",
       "<span class='name'><%- name %> <span class='label label-warning'><%- type %></span></span><br>",

@@ -90,7 +90,7 @@ var is_validRoomName = (roomname) => {
 const ROOMNAME_ERROR = "ROOMNAME should be 32 length mix of numeric and alphabet";
 if(process.env.NODE_ENV==="production") {
   var tmpl = fs.readFileSync(__dirname + "/html/skyway-box.html.tmpl").toString();
-  const PROD_TMPL = _.template(tmpl)({js: "skyway-box.build.min.js"});
+  const PROD_TMPL = _.template(tmpl);
 }
 
 app.get("/", (req, res) => {

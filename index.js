@@ -90,13 +90,13 @@ var is_validRoomName = (roomname) => {
 const ROOMNAME_ERROR = "ROOMNAME should be 32 length mix of numeric and alphabet";
 if(process.env.NODE_ENV==="production") {
   var tmpl = fs.readFileSync(__dirname + "/html/skyway-box.html.tmpl").toString();
-  const PROD_TMPL = _.template(tmpl);
+  var template = _.template(tmpl);
 }
 
 app.get("/", (req, res) => {
   var apphtml = ( () => {
     if( process.env.NODE_ENV==="production" ) {
-      return PROD_TMPL_({js: "skyway-box.build.min.js", "room_name_for_create": md5(new Date())});
+      return template({js: "skyway-box.build.min.js", "room_name_for_create": md5(new Date())});
     } else {
       var tmpl = fs.readFileSync(__dirname + "/html/skyway-box.html.tmpl").toString();
       return _.template(tmpl)({js: "skyway-box.build.js", "room_name_for_create": md5(new Date())});
@@ -121,7 +121,7 @@ app.get("/", (req, res) => {
 app.get("/r/:room", (req, res) => {
   var apphtml = ( () => {
     if( process.env.NODE_ENV==="production" ) {
-      return PROD_TMPL_({js: "skyway-box.build.min.js", "room_name_for_create": md5(new Date())});
+      return template({js: "skyway-box.build.min.js", "room_name_for_create": md5(new Date())});
     } else {
       var tmpl = fs.readFileSync(__dirname + "/html/skyway-box.html.tmpl").toString();
       return _.template(tmpl)({js: "skyway-box.build.js", "room_name_for_create": md5(new Date())});

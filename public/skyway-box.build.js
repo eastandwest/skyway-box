@@ -10480,7 +10480,7 @@
 	    _this.profile = new Profile("#profile-view", access_token);
 	    _this.preview = new Preview("#preview-view", access_token);
 	    _this.slideshare = new SlideShare("#slideshare-view", access_token);
-	    _this.upload = new Upload("#upload-view", access_token);
+	    _this.upload = new Upload("#btn-upload", access_token);
 	
 	    _this.setHandler();
 	    return _this;
@@ -10550,7 +10550,7 @@
 	////////////////////////////////////////////
 	// template html (underscore)
 	//
-	var template_ = ["<ol class='breadcrumb'>", "<li><img height='14px' src='/box-logo.svg'></li>", "<% attributes.path_collection.entries.forEach( function(entry, i) { %>", "<li<% if (attributes.path_collection.entries.length === (i + 1)) { %> class='active'<% } %>>", "<a href='#' data-id='<%= entry.id %>' data-action='open'><%= entry.name %></a>", "</li>", "<% }); %>", "</ol>", "<% attributes.item_collection.entries.forEach( function(entry) { %>", "<div class='well well-sm clearfix'>", "<div class='pull-left'>", "<% if(entry.type === 'folder') { %>", "<span id='icon_<%= entry.id %>' class=''><img src='/folder30.png'></span>&nbsp;", "<% } else if(entry.type === 'web_link') { %>", "<span id='icon_<%= entry.id %>' class=''><img src='/link30.png'></span>&nbsp;", "<% } else { %>", "<span id='icon_<%= entry.id %>' class=''><img src='/thumbnail/<%= entry.id %>?access_token=<%= access_token %>'></span>&nbsp;", "<% } %>", "<span class='label label-primary'><%= entry.type %></span>&nbsp;", " : <%= entry.name %>", "</div>", "<% if( entry.type === 'file' && !entry.name.match(/boxnote$/) ) { %>", "<div class='pull-right'>", "<button title='Share' class='btn btn-xs btn-info' data-action='share' data-id='<%= entry.id %>'>", "<span class='fa fa-share-alt' aria-hidden='true' data-action='share' data-id='<%= entry.id %>'></span>", "</button>&nbsp;", "<button title='Preview' class='btn btn-xs btn-warning' data-action='preview' data-id='<%= entry.id %>'>", "<span class='fa fa-eye' aria-hidden='true' data-action='preview' data-id='<%= entry.id %>'></span>", "</button>&nbsp;", "</div>", "<% } else if (entry.type === 'folder' ) { %>", "<div class='pull-right'>", "<button class='btn btn-xs btn-success' data-action='open' data-id='<%= entry.id %>'>", "<span class='glyphicon glyphicon-circle-arrow-right' aria-hidden='true' data-action='open' data-id='<%= entry.id %>'></span>", "</button>&nbsp;", "</div>", "<% } %> ", "</div>", "<% }); %>"].join("");
+	var template_ = ["<ol class='breadcrumb'>", "<li><img height='14px' src='/box-logo.svg'></li>", "<% attributes.path_collection.entries.forEach( function(entry, i) { %>", "<li<% if (attributes.path_collection.entries.length === (i + 1)) { %> class='active'<% } %>>", "<a href='#' data-id='<%= entry.id %>' data-action='open'><%= entry.name %></a>", "</li>", "<% }); %>", "</ol>", "<% attributes.item_collection.entries.forEach( function(entry) { %>", "<div class='well well-sm clearfix'>", "<div class='pull-left'>", "<div style='float:left;width: 50px'>", "<% if(entry.type === 'folder') { %>", "<span id='icon_<%= entry.id %>' class=''><img src='/folder30.png'></span>&nbsp;", "<% } else if(entry.type === 'web_link') { %>", "<span id='icon_<%= entry.id %>' class=''><img src='/link30.png'></span>&nbsp;", "<% } else { %>", "<span id='icon_<%= entry.id %>' class=''><img src='/thumbnail/<%= entry.id %>?access_token=<%= access_token %>'></span>&nbsp;", "<% } %>", "</div>", "<div style='margin-left:50px;text-align:left;'>", "<span class='label label-primary'><%= entry.type %></span>", "&nbsp;&nbsp;<%= entry.name %>", "</div>", "<div style='clear:both'></div>", "</div>", "<% if( entry.type === 'file' && !entry.name.match(/boxnote$/) ) { %>", "<div class='pull-right'>", "<button title='Share' class='btn btn-xs btn-info' data-action='share' data-id='<%= entry.id %>'>", "<span class='fa fa-share-alt' aria-hidden='true' data-action='share' data-id='<%= entry.id %>'></span>", "</button>&nbsp;", "<button title='Preview' class='btn btn-xs btn-warning' data-action='preview' data-id='<%= entry.id %>'>", "<span class='fa fa-eye' aria-hidden='true' data-action='preview' data-id='<%= entry.id %>'></span>", "</button>&nbsp;", "</div>", "<% } else if (entry.type === 'folder' ) { %>", "<div class='pull-right'>", "<button class='btn btn-xs btn-success' data-action='open' data-id='<%= entry.id %>'>", "<span class='glyphicon glyphicon-circle-arrow-right' aria-hidden='true' data-action='open' data-id='<%= entry.id %>'></span>", "</button>&nbsp;", "</div>", "<% } %> ", "</div>", "<% }); %>"].join("");
 	
 	////////////////////////////////////////////
 	// Backbone Model
@@ -14724,7 +14724,7 @@
 	var View = Backbone.View.extend({
 	  template: _.template(template_),
 	  events: {
-	    "click button": "onBtnClicked"
+	    "click": "onBtnClicked"
 	  },
 	  onBtnClicked: function onBtnClicked(ev) {
 	    this.trigger("btnClicked");
@@ -14762,14 +14762,14 @@
 	    value: function post(mesgs) {
 	      var _this2 = this;
 	
-	      $(this.el).find("button").attr("disabled", true);
+	      $(this.el).attr("disabled", true);
 	      $.post('/upload', {
 	        filename: Date.now() + ".json",
 	        access_token: this.access_token,
 	        folder_id: this.folder_id,
 	        data: mesgs
 	      }, function (resp) {
-	        $(_this2.el).find("button").attr("disabled", false);
+	        $(_this2.el).attr("disabled", false);
 	        console.log("POST /upload succeed", resp);
 	      }, "json");
 	    }

@@ -16,7 +16,7 @@ class Box extends EventEmitter {
     this.profile    = new Profile("#profile-view", access_token);
     this.preview    = new Preview("#preview-view", access_token);
     this.slideshare = new SlideShare("#slideshare-view", access_token);
-    this.upload     = new Upload("#upload-view", access_token);
+    this.upload     = new Upload("#btn-upload", access_token);
 
     this.setHandler();
   }

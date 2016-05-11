@@ -23,7 +23,7 @@ var Model = Backbone.Model.extend({
 var View = Backbone.View.extend({
   template: _.template(template_),
   events: {
-    "click button": "onBtnClicked"
+    "click": "onBtnClicked"
   },
   onBtnClicked: function(ev) {
     this.trigger("btnClicked");
@@ -51,14 +51,14 @@ class Upload extends EventEmitter {
     });
   }
   post(mesgs) {
-    $(this.el).find("button").attr("disabled", true);
+    $(this.el).attr("disabled", true);
     $.post('/upload', {
       filename: Date.now()+".json",
       access_token: this.access_token,
       folder_id: this.folder_id,
       data: mesgs
     }, (resp) => {
-      $(this.el).find("button").attr("disabled", false);
+      $(this.el).attr("disabled", false);
       console.log("POST /upload succeed", resp);
     },
     "json");

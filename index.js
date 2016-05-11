@@ -249,25 +249,46 @@ app.get("/thumbnail/:id", (req, res) => {
   });
 
   req.end();
+});
+
+///////////////////////////////////////////////
+// GET /is_valid?access_token=ACCESS_TOKEN
+//
+app.get("/is_valid", (req, res) => {
+  var access_token = req.query.access_token;
+
+  // , api = "https://api.box.com/2.0/"
+  //
+  var req = https.request({
+    "protocol": "https:",
+    "hostname": "api.box.com",
+    "path": "/2.0/folders/0",
+    "headers": {
+      "Authorization": "Bearer " + access_token
+    }
+  }, (response) => {
+    var statusCode = response.statusCode;
+    var headers = response.headers;
 
 
+    if(statusCode === 200) {
+      response.on("data", (chunk) => {
+      });
 
-  // fixme: fix hardcode of url
-  // var options = {
-  //   "method": "GET",
-  //   "url": api + "files/" + file_id + "/thumbnail.png",
-  //   "headers": {
-  //     "Authorization": "Bearer " + access_token
-  //   },
-  //       "trace-ascii": "trace2.log"
-  // };
+      response.on("end", () => {
+        res.end("ok");
+      });
+    } else {
+      res.statusCode = 403;
+      response.on("data", (chunk) => {
+      });
+      response.on("end", () => {
+        res.end("ng");
+      });
+    }
+  });
 
-  // // todo: error handling
-  // curl.request(options, (e, body, r) => {
-  //   res.setHeader("content-type", "image/gif");
-  //   res.send(body);
-  //   res.end();
-  // });
+  req.end();
 });
 
 

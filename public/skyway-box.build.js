@@ -70,8 +70,15 @@
 	
 	      // todo: check token is valid
 	      if (token_.access_token) {
-	        $(".mastcontainer").show();
-	        App.createFrame(token_.access_token);
+	        State.is_access_token_valid(token_.access_token, function (is_valid) {
+	          if (is_valid) {
+	            $(".mastcontainer").show();
+	            State.startPolling2keep_acceess_token(token_.access_token);
+	            App.createFrame(token_.access_token);
+	          } else {
+	            location.href = "/";
+	          }
+	        });
 	      }
 	    } catch (err) {
 	      console.error("token parse error");
@@ -84,6 +91,7 @@
 	      sessionStorage.token = JSON.stringify(token);
 	
 	      if (token.access_token) {
+	        State.startPolling2keep_acceess_token(token.access_token);
 	        $(".mastcontainer").show();
 	        App.createFrame(token.access_token);
 	      } else {
@@ -10109,6 +10117,33 @@
 	    sessionStorage[this.key] = id_;
 	
 	    return id_;
+	  },
+	  is_access_token_valid: function is_access_token_valid(access_token, callback) {
+	    $.ajax({
+	      url: "/is_valid",
+	      data: { access_token: access_token },
+	      success: function success(data) {
+	        if (typeof callback === "function") {
+	          callback(data === "ok" ? true : false);
+	        } else {
+	          console.log("is_access_token_valid - ", data);
+	        }
+	      },
+	      error: function error(err) {
+	        console.log(err);
+	        if (typeof callback === "function") {
+	          callback(false);
+	        } else {
+	          console.log("is_access_token_valid - false");
+	        }
+	      }
+	    });
+	  },
+	  startPolling2keep_acceess_token: function startPolling2keep_acceess_token(access_token) {
+	    // to keep access_token, polling every 10 minutes.
+	    setInterval(function (ev) {
+	      State.is_access_token_valid(access_token);
+	    }, 60000 * 10);
 	  }
 	};
 	

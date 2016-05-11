@@ -21,8 +21,15 @@ App.getToken = () => {
 
       // todo: check token is valid
       if(token_.access_token) {
-        $(".mastcontainer").show();
-        App.createFrame(token_.access_token);
+        State.is_access_token_valid(token_.access_token, (is_valid) => {
+          if(is_valid) {
+            $(".mastcontainer").show();
+            State.startPolling2keep_acceess_token(token_.access_token);
+            App.createFrame(token_.access_token);
+          } else {
+            location.href = "/";
+          }
+        });
       }
     } catch(err) {
       console.error("token parse error");
@@ -35,6 +42,7 @@ App.getToken = () => {
       sessionStorage.token = JSON.stringify(token);
 
       if(token.access_token) {
+        State.startPolling2keep_acceess_token(token.access_token);
         $(".mastcontainer").show();
         App.createFrame(token.access_token);
       } else {

@@ -60,6 +60,31 @@ var State = {
     sessionStorage[this.key] = id_;
 
     return id_
+  },
+  is_access_token_valid: (access_token, callback) => {
+    $.ajax({
+      url: "/is_valid",
+      data: {access_token: access_token},
+      success: (data) => {
+        if(typeof(callback) === "function") {
+          callback( data === "ok" ? true : false );
+        } else {
+          console.log("is_access_token_valid - ", data);
+        }
+      },
+      error: (err) => {
+               console.log(err);
+        if(typeof(callback) === "function") {
+          callback( false );
+        } else {
+          console.log("is_access_token_valid - false");
+        }
+      }
+    });
+  },
+  startPolling2keep_acceess_token: (access_token) => {
+    // to keep access_token, polling every 10 minutes.
+    setInterval( (ev) => {State.is_access_token_valid(access_token);}, 60000 * 10);
   }
 }
 

@@ -26,6 +26,32 @@ app.use(morgan('combined'))
 app.use(express.static(__dirname + '/public'));
 
 ///////////////////////////////////////////////
+// global check for AWS environment
+//  redirect ELB http access to https
+app.all('*', (req, res, next) => {
+  if(process.env.NODE_ENV === "production" ) {
+    var is_via_elb = req.headers['x-forwarded-proto'];
+
+    if( is_via_elb ) {
+      if( is_via_elb === 'https' ) {
+        // not redirect, continue
+        return next();
+      } else {
+        // it's http access. redirect to https
+        res.redirect('https://' + req.headers.host + req.url);
+      }
+    } else {
+      // attempting to development, continue
+      return next();
+    }
+  } else {
+    return next();
+  }
+});
+
+
+
+///////////////////////////////////////////////
 // GET /token?code=CODE
 //
 
@@ -203,9 +229,6 @@ app.get("/thumbnail/:id", (req, res) => {
   var file_id = req.params.id
     , access_token = req.query.access_token;
 
-  // , api = "https://api.box.com/2.0/"
-  //
-  console.log(file_id);
   var req = https.request({
     "protocol": "https:",
     "hostname": "api.box.com",
@@ -216,13 +239,11 @@ app.get("/thumbnail/:id", (req, res) => {
   }, (response) => {
     var statusCode = response.statusCode;
     var headers = response.headers;
-    console.log(statusCode);
 
     if(statusCode === 200) {
       res.setHeader("content-type", "image/png");
 
       response.on("data", (chunk) => {
-        console.log(chunk.length);
         res.send(chunk);
       });
 
@@ -360,5 +381,5 @@ app.post("/upload", (req, res) => {
 var server = process.env.NODE_ENV === "production" && process.env.SECURE !== "true" ? http.createServer(app) : https.createServer(credentials, app);
 
 server.listen(3000, () => {
-  console.log("[%s] app listening of port 3000", process.env.NODE_ENV);
+  logger.info("[%s] app listening of port 3000", process.env.NODE_ENV);
 })

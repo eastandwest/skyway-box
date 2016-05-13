@@ -91,7 +91,7 @@ $ tree
 
 ## site for each APIs
 
-* box Developers - API documents for box API
+* box Developers - API documents for box, online strage PaaS
   * https://developers.box.com/
 * SkyWay - API documents for SkyWay, WebRTC PaaS
   * http://nttcom.github.io/skyway/en/info-js.html

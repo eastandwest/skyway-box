@@ -5,6 +5,11 @@
 ## monitor master branch
 ## If updated, automatically pull; npm install; then execute forever restart 0
 
+## START MESSAGE ##
+TIMESTAMP=`date`
+
+echo "#### BEGIN : ${TIMESTAMP} ####"
+
 ## SECTION1: check app installed
 
 REPO=https://github.com/eastandwest/skyway-box.git
@@ -54,3 +59,5 @@ else
   npm install
   forever restart 0
 fi
+
+echo "#### FINISH : ${TIMESTAMP} ####"

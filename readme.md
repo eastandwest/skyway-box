@@ -32,6 +32,7 @@ then, update ``config.json``
   "client_secret": "********************************", <- https://app.box.com/developers/services/edit/
   "skyway_api_key" : "********-****-****-****-************" <- https://skyway.io/ds/
 }
+```
 
 ### run watch script
 

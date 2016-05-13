@@ -82,7 +82,7 @@ $ tree
 │       └── textInput.js  // skyway text input feature
 ├── logs
 ├── package.json
-├── public            // static files such as image and js script build by webpack.
+├── public            // static files such as image and js script built by webpack.
 ├── readme.md
 ├── test              // todo: write test code
 ├── tmp               // temporary directory for uploading chat history
@@ -91,9 +91,9 @@ $ tree
 
 ## site for each APIs
 
-* box Developers - functional PaaS of on line storage
+* box Developers - API documents for box API
   * https://developers.box.com/
-* SkyWay - WebRTC PaaS
+* SkyWay - API documents for SkyWay, WebRTC PaaS
   * http://nttcom.github.io/skyway/en/info-js.html
 
 

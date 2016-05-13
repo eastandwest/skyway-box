@@ -55,7 +55,7 @@ if [ "${CHECKER}" = "" ]; then
   echo "nothing updated"
 else
   cd ${HOME}/${DIR}
-  git merge
+  git pull origin master
   npm install
   forever restart 0
 fi

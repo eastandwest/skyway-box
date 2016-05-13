@@ -17,8 +17,15 @@ var privateKey = fs.readFileSync(__dirname + '/cert/server.key', 'utf8')
   , certificate = fs.readFileSync(__dirname + '/cert/server.crt', 'utf8')
   , credentials = {key: privateKey, cert: certificate}
   , api = "https://api.box.com/2.0/"
-  , logger = new log4js.getLogger("root")
+  , logger = new log4js.getLogger("server-root")
 
+
+//////////////////////////////////////////////
+// todo: main and each routing component shoul be
+// splitted into each library.
+//
+//
+//////////////////////////////////////////////
 
 app.use( bodyParser.json() );
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -48,8 +55,6 @@ app.all('*', (req, res, next) => {
     return next();
   }
 });
-
-
 
 ///////////////////////////////////////////////
 // GET /token?code=CODE
@@ -383,7 +388,7 @@ server.listen(3000, () => {
   logger.info( "[%s] App 'box-skyway' listening of port 3000", process.env.NODE_ENV );
 
   if( process.env.NODE_ENV !== "production" ) {
-    logger.info( "When developing, don't forget to run 'npm run dev' in another console ;)" );
-    logger.info( "For more detail, please check readme.md." );
+    logger.info( "  -- Whle developing, don't forget to run 'npm run dev' in another console ;)" );
+    logger.info( "  -- For more detail, please check readme.md." );
   }
 })

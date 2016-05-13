@@ -33,6 +33,9 @@ jspm_packages
 # Optional REPL history
 .node_repl_history
 
+# OS specific data
+.DS_Store
+
 # configuration data
 conf/*.json
 

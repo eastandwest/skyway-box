@@ -361,8 +361,7 @@ app.post("/upload", (req, res) => {
         "form" : [
           "attributes=" + JSON.stringify({"name": filename, "parent": {"id": folder_id}}),
           "file=@"+tmpfilename
-        ],
-        "trace-ascii": "trace.log"
+        ]
       }
 
       // todo: error handling
@@ -381,5 +380,10 @@ app.post("/upload", (req, res) => {
 var server = process.env.NODE_ENV === "production" && process.env.SECURE !== "true" ? http.createServer(app) : https.createServer(credentials, app);
 
 server.listen(3000, () => {
-  logger.info("[%s] app listening of port 3000", process.env.NODE_ENV);
+  logger.info( "[%s] App 'box-skyway' listening of port 3000", process.env.NODE_ENV );
+
+  if( process.env.NODE_ENV !== "production" ) {
+    logger.info( "When developing, don't forget to run 'npm run dev' in another console ;)" );
+    logger.info( "For more detail, please check readme.md." );
+  }
 })

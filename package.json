@@ -4,7 +4,7 @@
   "description": "proof of concept showcases of skyway and box",
   "main": "index.js",
   "scripts": {
-    "test": "NODE_ENV=test webpack-dev-server --config webpack.config.js --inline --https",
+    "dev": "NODE_ENV=development webpack --watch",
     "build": "NODE_ENV=development webpack;NODE_ENV=production webpack -p",
     "production_test": "NODE_ENV=production SECURE=true node index.js"
   },

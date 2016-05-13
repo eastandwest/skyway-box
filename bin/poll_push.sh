@@ -18,6 +18,14 @@ MASTERCONF=${HOME}/config.json.master
 
 if [ -d ${HOME}/${DIR} ]; then
   echo "find ${DIR}! Skip clone process";
+
+  # check forever exist
+  EXIST_FOREVER=`forever list | grep ${DIR}`
+  if [ "${EXIST_FOREVER}" = "" ]; then
+    # if not execute forever process
+    echo "forever does not exist. execute it";
+    NODE_ENV=production forever start ${HOME}/${DIR}/index.js
+  fi
 else
   echo "can't find ${DIR}. start clone process";
   if [ -f ${MASTERCONF} ]; then

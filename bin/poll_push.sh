@@ -41,7 +41,7 @@ fi
 ## SECTION2: check updated
 
 cd ${HOME}/${DIR}
-CHECKER=`git fetch origin master|grep "origin\/master"`
+CHECKER=`git fetch origin master 2>&1 >/dev/null | grep "origin\/master"`
 
 ## SECTION3: run update commands
 

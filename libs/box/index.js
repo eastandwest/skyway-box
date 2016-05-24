@@ -48,6 +48,18 @@ class Box extends EventEmitter {
     });
   }
 
+  renew_token(new_token) {
+    if(!new_token) throw "new_token must be set";
+
+    this.access_token = new_token;
+
+    this.folder.renew_token(this.access_token);
+    this.profile.renew_token(this.access_token);
+    this.preview.renew_token(this.access_token);
+    this.slideshare.renew_token(this.access_token);
+    this.upload.renew_token(this.access_token);
+  }
+
   showSlideShare(embedlinkObj) {
     this.slideshare.show(embedlinkObj);
   }

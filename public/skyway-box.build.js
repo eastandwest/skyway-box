@@ -73,7 +73,7 @@
 	        State.is_access_token_valid(token_.access_token, function (is_valid) {
 	          if (is_valid) {
 	            $(".mastcontainer").show();
-	            State.startPolling2keep_acceess_token(token_.access_token);
+	            App.refresh_token(); // initialize access token
 	            App.createFrame(token_.access_token);
 	          } else {
 	            location.href = "/";
@@ -91,7 +91,6 @@
 	      sessionStorage.token = JSON.stringify(token);
 	
 	      if (token.access_token) {
-	        State.startPolling2keep_acceess_token(token.access_token);
 	        $(".mastcontainer").show();
 	        App.createFrame(token.access_token);
 	      } else {
@@ -106,6 +105,10 @@
 	
 	App.createFrame = function (access_token) {
 	  box = new Box(access_token);
+	
+	  setInterval(function (ev) {
+	    App.refresh_token();
+	  }, 50 * 60 * 1000); // renew access_token every 50 minutes
 	
 	  $.ajax({
 	    "url": "/api_key",
@@ -140,6 +143,27 @@
 	  skyway.on("recv:embedlink", function (embedlinkObj) {
 	    box.showSlideShare(embedlinkObj);
 	  });
+	};
+	
+	App.refresh_token = function () {
+	  try {
+	    var token = JSON.parse(sessionStorage.token);
+	
+	    if (!token.refresh_token) throw "cannot find refresh token on sessionStorage";
+	
+	    $.get("/refresh_token", { "refresh_token": token.refresh_token }).done(function (data) {
+	      var token_ = JSON.parse(data);
+	      if (token_.access_token) {
+	        console.debug("renew access_token", token_.access_token);
+	        sessionStorage.token = JSON.stringify(token_);
+	        box.renew_token(token_.access_token);
+	      }
+	    }).fail(function (err) {
+	      throw err;
+	    });
+	  } catch (err) {
+	    console.error(err);
+	  }
 	};
 	
 	// for login
@@ -210,7 +234,7 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
-	 * jQuery JavaScript Library v2.2.3
+	 * jQuery JavaScript Library v2.2.4
 	 * http://jquery.com/
 	 *
 	 * Includes Sizzle.js
@@ -220,7 +244,7 @@
 	 * Released under the MIT license
 	 * http://jquery.org/license
 	 *
-	 * Date: 2016-04-05T19:26Z
+	 * Date: 2016-05-20T17:23Z
 	 */
 	
 	(function( global, factory ) {
@@ -276,7 +300,7 @@
 	
 	
 	var
-		version = "2.2.3",
+		version = "2.2.4",
 	
 		// Define a local copy of jQuery
 		jQuery = function( selector, context ) {
@@ -5217,13 +5241,14 @@
 		isDefaultPrevented: returnFalse,
 		isPropagationStopped: returnFalse,
 		isImmediatePropagationStopped: returnFalse,
+		isSimulated: false,
 	
 		preventDefault: function() {
 			var e = this.originalEvent;
 	
 			this.isDefaultPrevented = returnTrue;
 	
-			if ( e ) {
+			if ( e && !this.isSimulated ) {
 				e.preventDefault();
 			}
 		},
@@ -5232,7 +5257,7 @@
 	
 			this.isPropagationStopped = returnTrue;
 	
-			if ( e ) {
+			if ( e && !this.isSimulated ) {
 				e.stopPropagation();
 			}
 		},
@@ -5241,7 +5266,7 @@
 	
 			this.isImmediatePropagationStopped = returnTrue;
 	
-			if ( e ) {
+			if ( e && !this.isSimulated ) {
 				e.stopImmediatePropagation();
 			}
 	
@@ -6171,19 +6196,6 @@
 			val = name === "width" ? elem.offsetWidth : elem.offsetHeight,
 			styles = getStyles( elem ),
 			isBorderBox = jQuery.css( elem, "boxSizing", false, styles ) === "border-box";
-	
-		// Support: IE11 only
-		// In IE 11 fullscreen elements inside of an iframe have
-		// 100x too small dimensions (gh-1764).
-		if ( document.msFullscreenElement && window.top !== window ) {
-	
-			// Support: IE11 only
-			// Running getBoundingClientRect on a disconnected node
-			// in IE throws an error.
-			if ( elem.getClientRects().length ) {
-				val = Math.round( elem.getBoundingClientRect()[ name ] * 100 );
-			}
-		}
 	
 		// Some non-html elements return undefined for offsetWidth, so check for null/undefined
 		// svg - https://bugzilla.mozilla.org/show_bug.cgi?id=649285
@@ -8075,6 +8087,7 @@
 		},
 	
 		// Piggyback on a donor event to simulate a different one
+		// Used only for `focus(in | out)` events
 		simulate: function( type, elem, event ) {
 			var e = jQuery.extend(
 				new jQuery.Event(),
@@ -8082,27 +8095,10 @@
 				{
 					type: type,
 					isSimulated: true
-	
-					// Previously, `originalEvent: {}` was set here, so stopPropagation call
-					// would not be triggered on donor event, since in our own
-					// jQuery.event.stopPropagation function we had a check for existence of
-					// originalEvent.stopPropagation method, so, consequently it would be a noop.
-					//
-					// But now, this "simulate" function is used only for events
-					// for which stopPropagation() is noop, so there is no need for that anymore.
-					//
-					// For the 1.x branch though, guard for "click" and "submit"
-					// events is still used, but was moved to jQuery.event.stopPropagation function
-					// because `originalEvent` should point to the original event for the constancy
-					// with other events and for more focused logic
 				}
 			);
 	
 			jQuery.event.trigger( e, null, elem );
-	
-			if ( e.isDefaultPrevented() ) {
-				event.preventDefault();
-			}
 		}
 	
 	} );
@@ -10138,12 +10134,6 @@
 	        }
 	      }
 	    });
-	  },
-	  startPolling2keep_acceess_token: function startPolling2keep_acceess_token(access_token) {
-	    // to keep access_token, polling every 10 minutes.
-	    setInterval(function (ev) {
-	      State.is_access_token_valid(access_token);
-	    }, 60000 * 10);
 	  }
 	};
 	
@@ -10553,6 +10543,19 @@
 	      });
 	    }
 	  }, {
+	    key: "renew_token",
+	    value: function renew_token(new_token) {
+	      if (!new_token) throw "new_token must be set";
+	
+	      this.access_token = new_token;
+	
+	      this.folder.renew_token(this.access_token);
+	      this.profile.renew_token(this.access_token);
+	      this.preview.renew_token(this.access_token);
+	      this.slideshare.renew_token(this.access_token);
+	      this.upload.renew_token(this.access_token);
+	    }
+	  }, {
 	    key: "showSlideShare",
 	    value: function showSlideShare(embedlinkObj) {
 	      this.slideshare.show(embedlinkObj);
@@ -10661,6 +10664,13 @@
 	  }
 	
 	  _createClass(Folder, [{
+	    key: 'renew_token',
+	    value: function renew_token(new_token) {
+	      if (!new_token) throw "new_token must be set";
+	
+	      this.access_token = new_token;
+	    }
+	  }, {
 	    key: 'fetch',
 	    value: function fetch(id, callback) {
 	      var _this2 = this;
@@ -14530,6 +14540,13 @@
 	  }
 	
 	  _createClass(Profile, [{
+	    key: 'renew_token',
+	    value: function renew_token(new_token) {
+	      if (!new_token) throw "new_token must be set";
+	
+	      this.access_token = new_token;
+	    }
+	  }, {
 	    key: 'fetch',
 	    value: function fetch(id, callback) {
 	      var _this2 = this;
@@ -14615,6 +14632,13 @@
 	  }
 	
 	  _createClass(Preview, [{
+	    key: 'renew_token',
+	    value: function renew_token(new_token) {
+	      if (!new_token) throw "new_token must be set";
+	
+	      this.access_token = new_token;
+	    }
+	  }, {
 	    key: 'fetch',
 	    value: function fetch(file_id) {
 	      var _this2 = this;
@@ -14652,7 +14676,10 @@
 	////////////////////////////////////////////
 	// template html (underscore)
 	//
-	var template_ = ["<iframe frameborder='0' width='100%' height='100%' src='<%= expiring_embed_link.url %>'></iframe>"].join("");
+	// todo: once full screen called then exit, event handler for each button gone away. to prevent this, we disable fullscreen feature but it should be fixed.
+	var template_ = ["<iframe frameborder='0' width='100%' height='100%' src='<%= expiring_embed_link.url %>' allowfullscreen='true' webkitallowfullscreen='true' mozallowfullscreen='true' oallowfullscreen='true' msallowfullscreen='true'></iframe>"
+	//  "<iframe frameborder='0' width='100%' height='100%' src='<%= expiring_embed_link.url %>'></iframe>"
+	].join("");
 	
 	////////////////////////////////////////////
 	// Backbone Model
@@ -14698,6 +14725,13 @@
 	    value: function show(embedlinkObj) {
 	      this.model.set(embedlinkObj);
 	      this.view.render();
+	    }
+	  }, {
+	    key: 'renew_token',
+	    value: function renew_token(new_token) {
+	      if (!new_token) throw "new_token must be set";
+	
+	      this.access_token = new_token;
 	    }
 	  }, {
 	    key: 'fetch',
@@ -14807,6 +14841,13 @@
 	        $(_this2.el).attr("disabled", false);
 	        console.log("POST /upload succeed", resp);
 	      }, "json");
+	    }
+	  }, {
+	    key: 'renew_token',
+	    value: function renew_token(new_token) {
+	      if (!new_token) throw "new_token must be set";
+	
+	      this.access_token = new_token;
 	    }
 	  }, {
 	    key: 'fetch',

@@ -48,6 +48,12 @@ class Profile extends EventEmitter {
     this.fetch(0);
   }
 
+  renew_token(new_token) {
+    if(!new_token) throw "new_token must be set";
+
+    this.access_token = new_token;
+  }
+
   fetch(id, callback) {
     this.model
       .fetch({"data": {"access_token": this.access_token}})

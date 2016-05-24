@@ -5,8 +5,10 @@ var backbone = require('backbone')
 ////////////////////////////////////////////
 // template html (underscore)
 //
+// todo: once full screen called then exit, event handler for each button gone away. to prevent this, we disable fullscreen feature but it should be fixed.
 var template_ = [
-  "<iframe frameborder='0' width='100%' height='100%' src='<%= expiring_embed_link.url %>'></iframe>"
+  "<iframe frameborder='0' width='100%' height='100%' src='<%= expiring_embed_link.url %>' allowfullscreen='true' webkitallowfullscreen='true' mozallowfullscreen='true' oallowfullscreen='true' msallowfullscreen='true'></iframe>"
+//  "<iframe frameborder='0' width='100%' height='100%' src='<%= expiring_embed_link.url %>'></iframe>"
 ].join("")
 
 ////////////////////////////////////////////
@@ -46,6 +48,12 @@ class SlideShare extends EventEmitter {
   show(embedlinkObj) {
     this.model.set(embedlinkObj);
     this.view.render();
+  }
+
+  renew_token(new_token) {
+    if(!new_token) throw "new_token must be set";
+
+    this.access_token = new_token;
   }
 
   fetch(file_id) {

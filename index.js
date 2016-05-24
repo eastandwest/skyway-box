@@ -29,7 +29,9 @@ var privateKey = fs.readFileSync(__dirname + '/cert/server.key', 'utf8')
 
 app.use( bodyParser.json() );
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(morgan('combined'))
+if(process.env.NODE_ENV === "production" ) {
+  app.use(morgan('combined'))
+}
 app.use(express.static(__dirname + '/public'));
 
 ///////////////////////////////////////////////
@@ -75,9 +77,36 @@ app.get("/token", (req, res) => {
   };
 
   curl.request(options, (e, body, r) => {
+    // todo: should check error
     res.send(body);
   });
 });
+
+///////////////////////////////////////////////
+// GET /token?code=CODE
+//
+
+app.get("/refresh_token", (req, res) => {
+  var refresh_token = req.query.refresh_token
+
+  var options = {
+    "method": "POST",
+    "url": conf.api_endpoint + "token",
+    "data": {
+      "grant_type": "refresh_token",
+      "refresh_token": refresh_token,
+      "client_id": conf.client_id,
+      "client_secret": conf.client_secret
+    }
+  };
+
+  curl.request(options, (e, body, r) => {
+    // todo: should check status error
+    res.send(body);
+  });
+});
+
+
 
 ///////////////////////////////////////////////
 // GET /cient_id

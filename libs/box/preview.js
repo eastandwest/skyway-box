@@ -42,6 +42,12 @@ class Preview extends EventEmitter {
     this.view = new View({el: this.el, model: this.model});
   }
 
+  renew_token(new_token) {
+    if(!new_token) throw "new_token must be set";
+
+    this.access_token = new_token;
+  }
+
   fetch(file_id) {
     this.model
       .set("id", file_id)

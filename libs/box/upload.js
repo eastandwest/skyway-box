@@ -64,6 +64,12 @@ class Upload extends EventEmitter {
     "json");
   }
 
+  renew_token(new_token) {
+    if(!new_token) throw "new_token must be set";
+
+    this.access_token = new_token;
+  }
+
   fetch(txt) {
     this.model
       .fetch({"data": {"access_token": this.access_token}})

@@ -24,7 +24,7 @@ App.getToken = () => {
         State.is_access_token_valid(token_.access_token, (is_valid) => {
           if(is_valid) {
             $(".mastcontainer").show();
-            State.startPolling2keep_acceess_token(token_.access_token);
+            App.refresh_token(); // initialize access token
             App.createFrame(token_.access_token);
           } else {
             location.href = "/";
@@ -42,7 +42,6 @@ App.getToken = () => {
       sessionStorage.token = JSON.stringify(token);
 
       if(token.access_token) {
-        State.startPolling2keep_acceess_token(token.access_token);
         $(".mastcontainer").show();
         App.createFrame(token.access_token);
       } else {
@@ -58,6 +57,8 @@ App.getToken = () => {
 
 App.createFrame = (access_token) => {
   box = new Box(access_token);
+
+  setInterval((ev) => { App.refresh_token(); }, 50 * 60 * 1000);  // renew access_token every 50 minutes
 
   $.ajax({
     "url": "/api_key",
@@ -94,6 +95,26 @@ App.setHandler = () => {
   });
 }
 
+App.refresh_token = () => {
+  try {
+    var token = JSON.parse(sessionStorage.token);
+
+    if(!token.refresh_token) throw "cannot find refresh token on sessionStorage";
+
+    $.get("/refresh_token", {"refresh_token": token.refresh_token}).done((data) => {
+      var token_ = JSON.parse(data);
+      if(token_.access_token) {
+        console.debug("renew access_token", token_.access_token);
+        sessionStorage.token = JSON.stringify(token_);
+        box.renew_token(token_.access_token);
+      }
+    }).fail((err) => {
+      throw err;
+    });
+  } catch(err) {
+    console.error(err);
+  }
+}
 
 
 // for login

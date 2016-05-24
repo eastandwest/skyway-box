@@ -81,10 +81,6 @@ var State = {
         }
       }
     });
-  },
-  startPolling2keep_acceess_token: (access_token) => {
-    // to keep access_token, polling every 10 minutes.
-    setInterval( (ev) => {State.is_access_token_valid(access_token);}, 60000 * 10);
   }
 }
 

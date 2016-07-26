@@ -37,7 +37,7 @@ body {
   color: #fff;
   font-family: 'Roboto', sans-serif;
   font-weight: 400;
-  text-align: center;
+  text-align: left;
 /*  text-shadow: 0 1px 3px rgba(0,0,0,.5);*/
 }
 
@@ -157,7 +157,7 @@ body {
   margin-right: 5px;
 }
 
-@media (min-width: 768px) {
+@media (min-width: 992px) {
   .masthead-brand {
     float: left;
   }
@@ -194,11 +194,52 @@ body {
   color: #23a1e6;
 }
 
+#folder-view {
+}
+
+#folder-view ol {
+  color: #ccc;
+  text-shadow: none;
+  text-align: left;
+  margin-bottom:0;
+}
+
+#folder-view ol.breadcrumb {
+  background: #fff;
+  border-bottom: 2px solid #ccc;
+  border-radius: 0;
+}
+
+#folder-view ol a {
+  color: rgb(51, 122, 183);
+}
+#folder-view ol li.active {
+  font-weight: bold;
+}
+#folder-view hr {
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
+
+#folder-view .well {
+  color: #000;
+  text-shadow: none;
+  margin-bottom: 0px;
+}
+
+
+#folder-view .well:nth-child(even) {
+  background: #f3f3f3;
+}
+
+
+
 /*
  * Affix and center
  */
 
-@media (min-width: 768px) {
+@media (min-width: 992px) {
   /* Pull out the header and footer */
   .masthead {
     position: fixed;
@@ -308,42 +349,6 @@ body {
     right: 626px;
 
     overflow: auto;
-  }
-
-  #folder-view ol {
-    color: #ccc;
-    text-shadow: none;
-    text-align: left;
-    margin-bottom:0;
-  }
-
-  #folder-view ol.breadcrumb {
-    background: #fff;
-    border-bottom: 2px solid #ccc;
-    border-radius: 0;
-  }
-
-  #folder-view ol a {
-    color: rgb(51, 122, 183);
-  }
-  #folder-view ol li.active {
-    font-weight: bold;
-  }
-  #folder-view hr {
-    margin-top: 5px;
-    margin-bottom: 5px;
-  }
-
-
-  #folder-view .well {
-    color: #000;
-    text-shadow: none;
-    margin-bottom: 0px;
-  }
-
-
-  #folder-view .well:nth-child(even) {
-    background: #f3f3f3;
   }
 
   #preview-view{
@@ -466,12 +471,46 @@ body {
 
 }
 
-@media (min-width: 992px) {
-  .masthead,
-  .mastfoot,
-  .cover-container {
-    width: 100%;
+@media (max-width: 991px) {
+  .mastcontainer {
+    color: black;
   }
+  .masthead {
+    height: 50px;
+  }
+  .masthead h3 {
+    font-size: 16pt;
+  }
+
+  .mobile-default-hide {
+    display: none;
+  }
+  .mobile-default-show {
+    display: block;
+  }
+
+  #archive-container {
+    position: fixed;
+    top: 48px;
+    left: 0;
+    right: 0;
+    bottom: 282px;
+    overflow : auto;
+  }
+  #realtime-container {
+    background-color: white;
+    position: fixed;
+    bottom: 0px;
+    left: 0;
+    right: 0;
+    height: 280px;
+  }
+
+  .mastfoot {
+    position: fixed;
+    bottom: 0;
+  }
+
 }
 
 .login,.mastcontainer {

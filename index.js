@@ -414,7 +414,7 @@ app.post("/upload", (req, res) => {
 var server = process.env.NODE_ENV === "production" && process.env.SECURE !== "true" ? http.createServer(app) : https.createServer(credentials, app);
 
 server.listen(3000, () => {
-  logger.info( "[%s] App 'box-skyway' listening of port 3000", process.env.NODE_ENV );
+  logger.info( "[%s] App 'box-skyway' listening of port 3000 ( https://localhost:3000/ ) ", process.env.NODE_ENV );
 
   if( process.env.NODE_ENV !== "production" ) {
     logger.info( "  -- Whle developing, don't forget to run 'npm run dev' in another console ;)" );
